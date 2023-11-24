@@ -22,6 +22,7 @@ window = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.set_caption("Move your step")
 font = pygame.font.Font('freesansbold.ttf',18)
 key_image = pygame.image.load("./images/key.png")
+tile_font = pygame.font.Font('freesansbold.ttf',10)
 
 # draw button to click algorithm
 class Button:
@@ -72,12 +73,17 @@ class Node:
         self.height = height
         self.visited =[]
         self.total_col = total_col
+        self.text = ""
     
     def get_pos(self):
         return self.x,self.y
         
     def draw(self, window):
         pygame.draw.rect(window,self.color,(self.y * self.width,self.x*self.height+100,self.width,self.height+100))
+        text_surface = tile_font.render(self.text, True, BLACK)
+        text_rect = text_surface.get_rect(center=((self.y * self.width) + self.width // 2, (self.x * self.height + 100) + self.height // 2))
+        window.blit(text_surface, text_rect)
+
         
     def set_barrier_color(self):
         self.color = BLACK
@@ -174,8 +180,10 @@ def make_grid_color(row,col,width,height, grid):
                 node.set_barrier_color()
             if(grid[i][j].startswith("K")):
                 node.set_key()
+                node.text = str(grid[i][j])
             if(grid[i][j].startswith("D")):
                 node.set_door()
+                node.text = str(grid[i][j])
                 
 
             grid_color[i].append(node)
