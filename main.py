@@ -16,10 +16,12 @@ BLACK = (0, 0, 0)
 BLUE = (15, 10, 222)
 GREY = (128, 128, 128)
 IRISBLUE = (0,181,204)
+PINK = (255,105,180)
 
 window = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.set_caption("Move your step")
 font = pygame.font.Font('freesansbold.ttf',18)
+key_image = pygame.image.load("./images/key.png")
 
 # draw button to click algorithm
 class Button:
@@ -97,6 +99,12 @@ class Node:
     
     def set_unvisible(self):
         self.color =IRISBLUE
+
+    def set_key(self):
+        self.color = PINK
+
+    def set_door(self):
+        self.color = GREY
         
     def is_barrier(self):
         return self.color == BLACK
@@ -164,6 +172,11 @@ def make_grid_color(row,col,width,height, grid):
                 end = node
             if(grid[i][j] == "-1"):
                 node.set_barrier_color()
+            if(grid[i][j].startswith("K")):
+                node.set_key()
+            if(grid[i][j].startswith("D")):
+                node.set_door()
+                
 
             grid_color[i].append(node)
             
