@@ -255,216 +255,44 @@ def astar_algorithm(draw, grid, start,end):
             
     return False
 
-# uniform cost search algorithm
-def ucs_algorithm(draw, grid, start,end):
-    count = 0
-    frontier = PriorityQueue()
-    frontier.put((0,count,start))
-    come = {}
-    g_cost ={node: float("inf") for i in grid for node in i}
-    g_cost[start] =0
-    
-    explored = {start}
-    
-    while not frontier.empty():
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-        
-        current_node = frontier.get()[2]
-        explored.remove(current_node)
-        
-        # check current node is an end => draw
-        if current_node == end:
-            draw_solution(come,end,draw,start)
-            # start.set_start_color()
-            # end.set_end_color()
-            return True
-        
-        for neighbor in current_node.neighbor:
-            temp_g_cost = g_cost[current_node] +1
-            
-            if temp_g_cost < g_cost[neighbor]:
-                come[neighbor] = current_node
-                g_cost[neighbor] = temp_g_cost
-                if neighbor not in explored:
-                    count+=1
-                    frontier.put((g_cost[neighbor], count, neighbor))
-                    explored.add(neighbor)
-                    neighbor.set_nodeOpen_color()
-                    
-        
-        draw()
-        
-        if(current_node != start):
-            current_node.set_nodeVisited_color()
-            
-    return False       
-
-# breath first search  
-def bfs_algorithm(draw, grid, start,end):
-    count = 0
-    frontier = Queue()
-    frontier.put(start)
-    come = {}
-    is_end_exist =False
-    explored = []
-    
-    while not frontier.empty():
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-        
-        if(is_end_exist == False):
-            current_node = frontier.get()
-            explored.append(current_node)
-        
-        # check current node is an end => draw
-        if is_end_exist:
-            print("OK")
-            draw_solution(come,end,draw,start)
-            # start.set_start_color()
-            # end.set_end_color()
-            return True
-        
-        for neighbor in current_node.neighbor:
-            if neighbor not in explored:
-                come[neighbor] = current_node
-                if(neighbor ==end):
-                    is_end_exist = True
-                    break
-                count+=1
-                frontier.put(neighbor)
-                neighbor.set_nodeOpen_color()            
-        
-        draw()
-        
-        if(current_node != start):
-            current_node.set_nodeVisited_color()
-            
-    return False
-
-def dfs_algorithm(draw, grid, start,end):
-    count = 0
-    frontier = Queue()
-    frontier.put(start)
-    come = {}
-    is_end_exist =False
-    explored = []
-    
-    while not frontier.empty():
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-        
-        if(is_end_exist == False):
-            current_node = frontier.get()
-            explored.append(current_node)
-        
-        # check current node is an end => draw
-        if is_end_exist:
-            print("OK")
-            draw_solution(come,end,draw,start)
-            # start.set_start_color()
-            # end.set_end_color()
-            return True
-        
-        for neighbor in current_node.neighbor:
-            if neighbor not in explored:
-                come[neighbor] = current_node
-                if(neighbor ==end):
-                    is_end_exist = True
-                    break
-                count+=1
-                frontier.put(neighbor)
-                neighbor.set_nodeOpen_color()            
-        
-        draw()
-        
-        if(current_node != start):
-            current_node.set_nodeVisited_color()
-            
-    return False
-
 
 def main(window, width, height):
     file = 'grid.txt'
     row, col,floor, temp_grid = read_grid_from_file(file)
     grid,start,end = make_grid_color(row,col,width,height,temp_grid)
     click1 = False
-    click2 = False
-    click3 = False
     click4 = False
     one_press = True
     
     run = True
     while run:
         window.fill(WHITE)
-        astar_button = Button(10, 10,"A* algo",click1)
-        ucs_button = Button(140,10, "UCS algo",click2)
-        bfs_button = Button(270, 10,"BFS algo",click3)
-        clear_button = Button(400, 10,"clear",click4)
+        astar_button = Button(10, 10,"Go",click1)
+        clear_button = Button(400, 10,"Clear",click4)
         draw_update(window,grid,row,col,width,height)     
         
         if(pygame.mouse.get_pressed()[0]) and one_press:
-            one_press = False
-            if(bfs_button.is_click()):
-                click3= True
-                click1 = click2 = click4= False
-                astar_button.remove_click()
-                astar_button.draw()
-                ucs_button.remove_click()
-                ucs_button.draw()
-                clear_button.remove_click()
-                clear_button.draw()
-                
+            one_press = False             
             if(astar_button.is_click()):
                 click1 = True
-                click2 = click3 = click4 =False
-                bfs_button.remove_click()
-                bfs_button.draw()
-                ucs_button.remove_click()
-                ucs_button.draw()
-                clear_button.remove_click()
-                clear_button.draw()
-                
-            if(ucs_button.is_click()):
-                click2= True
-                click1 = click3 = click4= False
-                astar_button.remove_click()
-                astar_button.draw()
-                bfs_button.remove_click()
-                bfs_button.draw()
+                click4 =False
                 clear_button.remove_click()
                 clear_button.draw()
                 
             if(clear_button.is_click()):
-                click4= True
-                click1 = click2 = click3= False
+                click4 = True
+                click1 = False
                 astar_button.remove_click()
                 astar_button.draw()
-                bfs_button.remove_click()
-                bfs_button.draw()
-                ucs_button.remove_click()
-                ucs_button.draw()
                 grid,start,end = make_grid_color(row,col,width,height,temp_grid)
             
-            if((click1 or click2 or click3)):
+            if((click1)):
                 for i in grid:
                     for node in i:
                         node.neighbors(grid)
-                if(click1): 
-                    astar_button.set_click()
-                    astar_button.draw()
-                    astar_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
-                if(click2):
-                    ucs_button.set_click()
-                    ucs_button.draw()
-                    ucs_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
-                if(click3): 
-                    bfs_button.set_click()
-                    bfs_button.draw()
-                    bfs_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
+                astar_button.set_click()
+                astar_button.draw()
+                astar_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
             
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press =True
@@ -473,9 +301,6 @@ def main(window, width, height):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-        
-                    
-        
         
 
     pygame.quit()
