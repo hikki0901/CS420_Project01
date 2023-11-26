@@ -74,6 +74,7 @@ class Node:
         self.visited =[]
         self.total_col = total_col
         self.text = ""
+        self.is_door = False
     
     def get_pos(self):
         return self.x,self.y
@@ -111,6 +112,7 @@ class Node:
 
     def set_door(self):
         self.color = GREY
+        self.is_door = True
         
     def is_barrier(self):
         return self.color == BLACK
@@ -121,27 +123,73 @@ class Node:
     def is_end(self):
         return self.color == BLUE
     
-    def neighbors(self,grid):
+    def neighbors(self,grid,collected_key):
         self.neighbor = []
         # move right - left - up - down
         if(self.x < self.total_row -1 and not grid[self.x+1][self.y].is_barrier()):
-            self.neighbor.append(grid[self.x+1][self.y])
+            if grid[self.x+1][self.y].is_door:
+                key = "K" + str(grid[self.x+1][self.y].text[1])
+                if key in collected_key:
+                    self.neighbor.append(grid[self.x+1][self.y])
+            else:
+                self.neighbor.append(grid[self.x+1][self.y])
+
         if(self.x > 0 and not grid[self.x -1][self.y].is_barrier()):
-            self.neighbor.append(grid[self.x -1][self.y])  
+            if grid[self.x -1][self.y].is_door:
+                key = "K" + str(grid[self.x -1][self.y].text[1])
+                if key in collected_key:
+                    self.neighbor.append(grid[self.x -1][self.y])
+            else:
+                self.neighbor.append(grid[self.x -1][self.y])  
+
         if(self.y >0 and not grid[self.x][self.y -1].is_barrier()):
-            self.neighbor.append(grid[self.x][self.y-1])
+            if grid[self.x][self.y-1].is_door:
+                key = "K" + str(grid[self.x][self.y-1].text[1])
+                if key in collected_key:
+                    self.neighbor.append(grid[self.x][self.y-1])
+            else:
+                self.neighbor.append(grid[self.x][self.y-1])
+
         if(self.y < self.total_col -1 and not grid[self.x][self.y + 1].is_barrier()):
-            self.neighbor.append(grid[self.x][self.y+1])
+            if grid[self.x][self.y+1].is_door:
+                key = "K" + str(grid[self.x][self.y+1].text[1])
+                if key in collected_key:
+                    self.neighbor.append(grid[self.x][self.y+1])
+            else:
+                self.neighbor.append(grid[self.x][self.y+1])
         
         #   moving diagonally  
         if(self.x < self.total_row-1 and self.y >0 and not grid[self.x+1][self.y].is_barrier() and not grid[self.x][self.y-1].is_barrier() and not grid[self.x +1][self.y-1].is_barrier()):
-            self.neighbor.append(grid[self.x+1][self.y-1])
+            if grid[self.x+1][self.y-1].is_door:
+                key = "K" + str(grid[self.x+1][self.y-1].text[1])
+                if key in collected_key:
+                    self.neighbor.append(grid[self.x+1][self.y-1])
+            else:
+                self.neighbor.append(grid[self.x+1][self.y-1])
+
         if(self.x < self.total_row-1 and self.y < self.total_col -1 and not grid[self.x+1][self.y].is_barrier() and not grid[self.x][self.y+1].is_barrier() and not grid[self.x +1][self.y+1].is_barrier()):
-            self.neighbor.append(grid[self.x+1][self.y+1])
+            if grid[self.x+1][self.y+1].is_door:
+                key = "K" + str(grid[self.x+1][self.y+1].text[1])
+                if key in collected_key:
+                    self.neighbor.append(grid[self.x+1][self.y+1])
+            else:
+                self.neighbor.append(grid[self.x+1][self.y+1])
+
         if(self.x >0 and self.y > 0 and not grid[self.x-1][self.y].is_barrier() and not grid[self.x][self.y-1].is_barrier() and not grid[self.x -1][self.y-1].is_barrier()):
-            self.neighbor.append(grid[self.x-1][self.y-1])
+            if grid[self.x-1][self.y-1].is_door:
+                key = "K" + str(grid[self.x-1][self.y-1].text[1])
+                if key in collected_key:
+                    self.neighbor.append(grid[self.x-1][self.y-1])
+            else:
+                self.neighbor.append(grid[self.x-1][self.y-1])
+
         if(self.x >0 and self.y <self.total_col -1 and not grid[self.x-1][self.y].is_barrier() and not grid[self.x][self.y+1].is_barrier() and not grid[self.x -1][self.y+1].is_barrier()):
-            self.neighbor.append(grid[self.x-1][self.y+1])
+            if grid[self.x-1][self.y+1].is_door:
+                key = "K" + str(grid[self.x-1][self.y+1].text[1])
+                if key in collected_key:
+                    self.neighbor.append(grid[self.x-1][self.y+1])
+            else:
+                self.neighbor.append(grid[self.x-1][self.y+1])
             
     def __lt__(self,other):
         return False
@@ -228,7 +276,7 @@ def heuristic(start,end):
     x2,y2 = end
     return abs(x1-x2) + abs(y1-y2)
 
-def astar_algorithm(draw, grid, start,end):
+def astar_algorithm(draw, grid, start,end, collected_key):
     count = 0
     frontier = PriorityQueue()
     frontier.put((0,count,start))
@@ -244,13 +292,23 @@ def astar_algorithm(draw, grid, start,end):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-        
+
+        collected_key.clear()
         current_node = frontier.get()[2]
-        explored.remove(current_node)
         
+        current = current_node
+        while current in come:   
+            if current.text.startswith("K"):
+                key = str(current.text)
+                if key not in collected_key:
+                    collected_key.add(key)    
+            current = come[current]
+        explored.remove(current_node)
+        current_node.neighbors(grid, collected_key)
         # check current node is an end => draw
         if current_node == end:
             draw_solution(come,end,draw,start)
+            print("collected key: ",collected_key)  
             # start.set_start_color()
             # end.set_end_color()
             return True
@@ -260,6 +318,7 @@ def astar_algorithm(draw, grid, start,end):
             
             if temp_g_cost < g_cost[neighbor]:
                 come[neighbor] = current_node
+                
                 g_cost[neighbor] = temp_g_cost
                 f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(),end.get_pos())
                 if neighbor not in explored:
@@ -267,13 +326,12 @@ def astar_algorithm(draw, grid, start,end):
                     frontier.put((f_cost[neighbor], count, neighbor))
                     explored.add(neighbor)
                     neighbor.set_nodeOpen_color()
-                    
-        
         draw()
         
         if(current_node != start):
             current_node.set_nodeVisited_color()
-            
+
+    print("collected key: ",collected_key)  
     return False
 
 
@@ -281,6 +339,7 @@ def main(window, width, height):
     file = 'grid.txt'
     row, col,floor, temp_grid = read_grid_from_file(file)
     grid,start,end = make_grid_color(row,col,width,height,temp_grid)
+    collected_key = set()
     click1 = False
     click4 = False
     one_press = True
@@ -310,10 +369,10 @@ def main(window, width, height):
             if((click1)):
                 for i in grid:
                     for node in i:
-                        node.neighbors(grid)
+                        node.neighbors(grid, collected_key)
                 astar_button.set_click()
                 astar_button.draw()
-                astar_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
+                astar_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end, collected_key)
             
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press =True
