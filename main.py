@@ -125,72 +125,47 @@ class Node:
     
     def neighbors(self,grid,collected_key):
         self.neighbor = []
-        # move right - left - up - down
-        if(self.x < self.total_row -1 and not grid[self.x+1][self.y].is_barrier()):
-            if grid[self.x+1][self.y].is_door:
-                key = "K" + str(grid[self.x+1][self.y].text[1])
-                if key in collected_key:
-                    self.neighbor.append(grid[self.x+1][self.y])
-            else:
-                self.neighbor.append(grid[self.x+1][self.y])
+        dir = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
-        if(self.x > 0 and not grid[self.x -1][self.y].is_barrier()):
-            if grid[self.x -1][self.y].is_door:
-                key = "K" + str(grid[self.x -1][self.y].text[1])
-                if key in collected_key:
-                    self.neighbor.append(grid[self.x -1][self.y])
-            else:
-                self.neighbor.append(grid[self.x -1][self.y])  
+        for dir in dir:
+            new_x = self.x + dir[0]
+            new_y = self.y + dir[1]
+            check = True
 
-        if(self.y >0 and not grid[self.x][self.y -1].is_barrier()):
-            if grid[self.x][self.y-1].is_door:
-                key = "K" + str(grid[self.x][self.y-1].text[1])
-                if key in collected_key:
-                    self.neighbor.append(grid[self.x][self.y-1])
-            else:
-                self.neighbor.append(grid[self.x][self.y-1])
+            if (0 <= new_x < self.total_row and 0 <= new_y < self.total_col):
+                if abs(dir[0]) == abs(dir[1]):
+                    if grid[self.x][new_y].is_barrier() or grid[new_x][self.y].is_barrier() or grid[new_x][new_y].is_barrier():
+                        check = False
 
-        if(self.y < self.total_col -1 and not grid[self.x][self.y + 1].is_barrier()):
-            if grid[self.x][self.y+1].is_door:
-                key = "K" + str(grid[self.x][self.y+1].text[1])
-                if key in collected_key:
-                    self.neighbor.append(grid[self.x][self.y+1])
-            else:
-                self.neighbor.append(grid[self.x][self.y+1])
-        
-        #   moving diagonally  
-        if(self.x < self.total_row-1 and self.y >0 and not grid[self.x+1][self.y].is_barrier() and not grid[self.x][self.y-1].is_barrier() and not grid[self.x +1][self.y-1].is_barrier()):
-            if grid[self.x+1][self.y-1].is_door:
-                key = "K" + str(grid[self.x+1][self.y-1].text[1])
-                if key in collected_key:
-                    self.neighbor.append(grid[self.x+1][self.y-1])
-            else:
-                self.neighbor.append(grid[self.x+1][self.y-1])
+                    if grid[new_x][self.y].is_door:
+                        key = "K" + str(grid[new_x][self.y].text[1])
+                        if key not in collected_key:
+                            check = False
 
-        if(self.x < self.total_row-1 and self.y < self.total_col -1 and not grid[self.x+1][self.y].is_barrier() and not grid[self.x][self.y+1].is_barrier() and not grid[self.x +1][self.y+1].is_barrier()):
-            if grid[self.x+1][self.y+1].is_door:
-                key = "K" + str(grid[self.x+1][self.y+1].text[1])
-                if key in collected_key:
-                    self.neighbor.append(grid[self.x+1][self.y+1])
-            else:
-                self.neighbor.append(grid[self.x+1][self.y+1])
+                    if grid[self.x][new_y].is_door:
+                        key = "K" + str(grid[self.x][new_y].text[1])
+                        if key not in collected_key:
+                            check = False
+                    
+                    if grid[new_x][new_y].is_door:
+                        key = "K" + str(grid[new_x][new_y].text[1])
+                        if key not in collected_key:
+                            check = False
+                                        
+                else:
+                    if grid[new_x][new_y].is_barrier():
+                        check = False
+                    
+                    if grid[new_x][new_y].is_door:
+                        key = "K" + str(grid[new_x][new_y].text[1])
+                        if key not in collected_key:
+                            check = False
 
-        if(self.x >0 and self.y > 0 and not grid[self.x-1][self.y].is_barrier() and not grid[self.x][self.y-1].is_barrier() and not grid[self.x -1][self.y-1].is_barrier()):
-            if grid[self.x-1][self.y-1].is_door:
-                key = "K" + str(grid[self.x-1][self.y-1].text[1])
-                if key in collected_key:
-                    self.neighbor.append(grid[self.x-1][self.y-1])
-            else:
-                self.neighbor.append(grid[self.x-1][self.y-1])
+            else: check = False
 
-        if(self.x >0 and self.y <self.total_col -1 and not grid[self.x-1][self.y].is_barrier() and not grid[self.x][self.y+1].is_barrier() and not grid[self.x -1][self.y+1].is_barrier()):
-            if grid[self.x-1][self.y+1].is_door:
-                key = "K" + str(grid[self.x-1][self.y+1].text[1])
-                if key in collected_key:
-                    self.neighbor.append(grid[self.x-1][self.y+1])
-            else:
-                self.neighbor.append(grid[self.x-1][self.y+1])
-            
+            if check == True:
+                self.neighbor.append(grid[new_x][new_y])
+    
     def __lt__(self,other):
         return False
 
