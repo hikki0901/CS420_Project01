@@ -288,7 +288,7 @@ def astar_algorithm(draw, grid, start,end):
         current_node.neighbors(grid)
         # check current node is an end => draw
         if current_node == end:
-            # draw_solution(come,end,draw,start)
+            draw_solution(come,end,draw,start)
             path = {}
             while end in come:   
                 path[come[end]] = end
@@ -319,16 +319,75 @@ def astar_algorithm(draw, grid, start,end):
     # print("collected key: ",collected_key)  
     return False
 
+def astar_algorithm_with_checkpoints(draw, grid, checklist):
+    total_path = {}
+    for i in range(len(checklist) - 2):
+        start = checklist[i]
+        end = checklist[i + 1]
+        count = 0
+        frontier = PriorityQueue()
+        frontier.put((0,count,start))
+        come = {}
+
+        g_cost ={node: float("inf") for i in grid for node in i}
+        g_cost[start] =0
+        f_cost = {node: float("inf") for i in grid for node in i}
+        f_cost[start] = heuristic(start.get_pos(), end.get_pos())
+        
+        explored = {start}
+        
+        while not frontier.empty():
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+
+            current_node = frontier.get()[2]
+            
+            explored.remove(current_node)
+            current_node.neighbors(grid)
+
+            if current_node == end:
+                #draw_solution(come,end,draw,start)
+                path = {}
+                while end in come:   
+                    path[come[end]] = end
+                    end = come[end]
+                total_path.update(path)
+                continue
+                #return path
+     
+            for neighbor in current_node.neighbor:
+                temp_g_cost = g_cost[current_node] +1
+                
+                if temp_g_cost < g_cost[neighbor]:
+                    come[neighbor] = current_node
+                    
+                    g_cost[neighbor] = temp_g_cost
+                    f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(),end.get_pos())
+                    if neighbor not in explored:
+                        count+=1
+                        frontier.put((f_cost[neighbor], count, neighbor))
+                        explored.add(neighbor)
+                        neighbor.set_nodeOpen_color()
+            draw()
+            
+            if(current_node != start):
+                current_node.set_nodeVisited_color()
+
+        #return False
+    draw_solution(total_path, checklist[len(checklist) - 1], draw, checklist[0])
+    return total_path
+
 def recursive (draw, grid, start,end, goal_list):
     path = astar_algorithm (draw, grid, start, end)
     for step in path:
         if step.text.startswith("D"):
-            goal_list.append(step.text)
+            goal_list.append(step)
             key = "K" +str(step.text)[1]
             for i in grid:
                 for node in i:
                     if node.text == key:
-                        goal_list.append(node.text)
+                        goal_list.append(node)
                         return recursive (draw, grid, start, node, goal_list)
     # for node in path:
     #     print (node.x, node.y)
@@ -375,6 +434,17 @@ def main(window, width, height):
                 astar_button.set_click()
                 astar_button.draw()
                 recursive(lambda: draw_update(window, grid, row, col,width,height), grid, start, end, goal_list)
+                grid,start,end = make_grid_color(row,col,width,height,temp_grid)
+                goal_list.reverse() 
+                goal_list.insert(0, start)
+                goal_list.append(end)
+                print(len(goal_list))
+                astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col,width,height),grid,goal_list)
+                #for i in range(len(goal_list)):
+                    #print(goal_list[i].get_pos())
+                    #astar_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, goal_list[i], goal_list[i+1])
+                #print(goal_list[0].text)
+
             
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press =True
