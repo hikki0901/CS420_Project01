@@ -136,7 +136,7 @@ class Node:
                 if abs(dir[0]) == abs(dir[1]):
                     if grid[self.x][new_y].is_barrier() or grid[new_x][self.y].is_barrier() or grid[new_x][new_y].is_barrier():
                         check = False
-
+                    '''
                     if grid[new_x][self.y].is_door:
                         key = "K" + str(grid[new_x][self.y].text[1])
                         if key not in collected_key:
@@ -151,16 +151,16 @@ class Node:
                         key = "K" + str(grid[new_x][new_y].text[1])
                         if key not in collected_key:
                             check = False
-                                        
+                    '''                
                 else:
                     if grid[new_x][new_y].is_barrier():
                         check = False
-                    
+                    '''
                     if grid[new_x][new_y].is_door:
                         key = "K" + str(grid[new_x][new_y].text[1])
                         if key not in collected_key:
                             check = False
-
+                    '''
             else: check = False
 
             if check == True:
