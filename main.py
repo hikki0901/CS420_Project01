@@ -246,10 +246,16 @@ def draw_solution(come,current,draw,start):
         draw()
 
 # support for A* algorithm
-def heuristic(start,end):
+def heuristic(start,end, grid):
     x1,y1 = start
     x2,y2 = end
-    return abs(x1-x2) + abs(y1-y2)
+    distance_to_key = set()
+    for i in grid:
+        for node in i:
+            if node.text.startswith("K"):
+                dis = abs(x1 - node.x) + abs(y1 - node.y)
+                distance_to_key.add(dis)
+    return abs(x1-x2) + abs(y1-y2) + min(distance_to_key)
 
 def astar_algorithm(draw, grid, start,end, collected_key):
     count = 0
@@ -259,7 +265,7 @@ def astar_algorithm(draw, grid, start,end, collected_key):
     g_cost ={node: float("inf") for i in grid for node in i}
     g_cost[start] =0
     f_cost = {node: float("inf") for i in grid for node in i}
-    f_cost[start] = heuristic(start.get_pos(), end.get_pos())
+    f_cost[start] = heuristic(start.get_pos(), end.get_pos(), grid)
     
     explored = {start}
     
@@ -295,7 +301,7 @@ def astar_algorithm(draw, grid, start,end, collected_key):
                 come[neighbor] = current_node
                 
                 g_cost[neighbor] = temp_g_cost
-                f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(),end.get_pos())
+                f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(),end.get_pos(), grid)
                 if neighbor not in explored:
                     count+=1
                     frontier.put((f_cost[neighbor], count, neighbor))
