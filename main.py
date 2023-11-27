@@ -123,7 +123,7 @@ class Node:
     def is_end(self):
         return self.color == BLUE
     
-    def neighbors(self,grid,collected_key):
+    def neighbors(self,grid):
         self.neighbor = []
         dir = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
@@ -246,18 +246,18 @@ def draw_solution(come,current,draw,start):
         draw()
 
 # support for A* algorithm
-def heuristic(start,end, grid):
+def heuristic(start,end):
     x1,y1 = start
     x2,y2 = end
-    distance_to_key = set()
-    for i in grid:
-        for node in i:
-            if node.text.startswith("K"):
-                dis = abs(x1 - node.x) + abs(y1 - node.y)
-                distance_to_key.add(dis)
-    return abs(x1-x2) + abs(y1-y2) + min(distance_to_key)
+    # distance_to_key = set()
+    # for i in grid:
+    #     for node in i:
+    #         if node.text.startswith("K"):
+    #             dis = abs(x1 - node.x) + abs(y1 - node.y)
+    #             distance_to_key.add(dis)
+    return abs(x1-x2) + abs(y1-y2)
 
-def astar_algorithm(draw, grid, start,end, collected_key):
+def astar_algorithm(draw, grid, start,end):
     count = 0
     frontier = PriorityQueue()
     frontier.put((0,count,start))
@@ -265,7 +265,7 @@ def astar_algorithm(draw, grid, start,end, collected_key):
     g_cost ={node: float("inf") for i in grid for node in i}
     g_cost[start] =0
     f_cost = {node: float("inf") for i in grid for node in i}
-    f_cost[start] = heuristic(start.get_pos(), end.get_pos(), grid)
+    f_cost[start] = heuristic(start.get_pos(), end.get_pos())
     
     explored = {start}
     
@@ -274,25 +274,29 @@ def astar_algorithm(draw, grid, start,end, collected_key):
             if event.type == pygame.QUIT:
                 pygame.quit()
 
-        collected_key.clear()
+        # collected_key.clear()
         current_node = frontier.get()[2]
         
-        current = current_node
-        while current in come:   
-            if current.text.startswith("K"):
-                key = str(current.text)
-                if key not in collected_key:
-                    collected_key.add(key)    
-            current = come[current]
+        # current = current_node
+        # while current in come:   
+        #     if current.text.startswith("K"):
+        #         key = str(current.text)
+        #         if key not in collected_key:
+        #             collected_key.add(key)    
+        #     current = come[current]
         explored.remove(current_node)
-        current_node.neighbors(grid, collected_key)
+        current_node.neighbors(grid)
         # check current node is an end => draw
         if current_node == end:
-            draw_solution(come,end,draw,start)
-            print("collected key: ",collected_key)  
+            # draw_solution(come,end,draw,start)
+            path = {}
+            while end in come:   
+                path[come[end]] = end
+                end = come[end]
+            return path
+            # print("collected key: ",collected_key)  
             # start.set_start_color()
             # end.set_end_color()
-            return True
         
         for neighbor in current_node.neighbor:
             temp_g_cost = g_cost[current_node] +1
@@ -301,7 +305,7 @@ def astar_algorithm(draw, grid, start,end, collected_key):
                 come[neighbor] = current_node
                 
                 g_cost[neighbor] = temp_g_cost
-                f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(),end.get_pos(), grid)
+                f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(),end.get_pos())
                 if neighbor not in explored:
                     count+=1
                     frontier.put((f_cost[neighbor], count, neighbor))
@@ -312,15 +316,31 @@ def astar_algorithm(draw, grid, start,end, collected_key):
         if(current_node != start):
             current_node.set_nodeVisited_color()
 
-    print("collected key: ",collected_key)  
+    # print("collected key: ",collected_key)  
     return False
+
+def recursive (draw, grid, start,end, goal_list):
+    path = astar_algorithm (draw, grid, start, end)
+    for step in path:
+        if step.text.startswith("D"):
+            goal_list.append(step.text)
+            key = "K" +str(step.text)[1]
+            for i in grid:
+                for node in i:
+                    if node.text == key:
+                        goal_list.append(node.text)
+                        return recursive (draw, grid, start, node, goal_list)
+    # for node in path:
+    #     print (node.x, node.y)
+    print("goal list: ",goal_list)
+
 
 
 def main(window, width, height):
     file = 'grid.txt'
     row, col,floor, temp_grid = read_grid_from_file(file)
     grid,start,end = make_grid_color(row,col,width,height,temp_grid)
-    collected_key = set()
+    goal_list = []
     click1 = False
     click4 = False
     one_press = True
@@ -343,6 +363,7 @@ def main(window, width, height):
             if(clear_button.is_click()):
                 click4 = True
                 click1 = False
+                goal_list.clear()
                 astar_button.remove_click()
                 astar_button.draw()
                 grid,start,end = make_grid_color(row,col,width,height,temp_grid)
@@ -350,10 +371,10 @@ def main(window, width, height):
             if((click1)):
                 for i in grid:
                     for node in i:
-                        node.neighbors(grid, collected_key)
+                        node.neighbors(grid)
                 astar_button.set_click()
                 astar_button.draw()
-                astar_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end, collected_key)
+                recursive(lambda: draw_update(window, grid, row, col,width,height), grid, start, end, goal_list)
             
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press =True
