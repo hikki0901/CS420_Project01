@@ -164,7 +164,8 @@ class Node:
             else: check = False
 
             if check == True:
-                self.neighbor.append(grid[new_x][new_y])
+                if grid[new_x][new_y] not in self.neighbor:
+                    self.neighbor.append(grid[new_x][new_y])
     
     def __lt__(self,other):
         return False
@@ -266,9 +267,7 @@ def astar_algorithm(draw, grid, start,end):
     g_cost[start] =0
     f_cost = {node: float("inf") for i in grid for node in i}
     f_cost[start] = heuristic(start.get_pos(), end.get_pos())
-    
     explored = {start}
-    
     while not frontier.empty():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -285,7 +284,7 @@ def astar_algorithm(draw, grid, start,end):
         #             collected_key.add(key)    
         #     current = come[current]
         explored.remove(current_node)
-        current_node.neighbors(grid)
+        # current_node.neighbors(grid)
         # check current node is an end => draw
         if current_node == end:
             draw_solution(come,end,draw,start)
@@ -300,7 +299,6 @@ def astar_algorithm(draw, grid, start,end):
         
         for neighbor in current_node.neighbor:
             temp_g_cost = g_cost[current_node] +1
-            
             if temp_g_cost < g_cost[neighbor]:
                 come[neighbor] = current_node
                 
@@ -310,18 +308,18 @@ def astar_algorithm(draw, grid, start,end):
                     count+=1
                     frontier.put((f_cost[neighbor], count, neighbor))
                     explored.add(neighbor)
-                    neighbor.set_nodeOpen_color()
+                    # neighbor.set_nodeOpen_color()
         draw()
         
-        if(current_node != start):
-            current_node.set_nodeVisited_color()
+        # if(current_node != start):
+        #     current_node.set_nodeVisited_color()
 
     # print("collected key: ",collected_key)  
     return False
 
 def astar_algorithm_with_checkpoints(draw, grid, checklist):
     total_path = {}
-    for i in range(len(checklist) - 2):
+    for i in range(len(checklist) - 1):
         start = checklist[i]
         end = checklist[i + 1]
         count = 0
@@ -345,9 +343,8 @@ def astar_algorithm_with_checkpoints(draw, grid, checklist):
             
             explored.remove(current_node)
             current_node.neighbors(grid)
-
             if current_node == end:
-                #draw_solution(come,end,draw,start)
+                draw_solution(come,end,draw,start)
                 path = {}
                 while end in come:   
                     path[come[end]] = end
@@ -368,11 +365,11 @@ def astar_algorithm_with_checkpoints(draw, grid, checklist):
                         count+=1
                         frontier.put((f_cost[neighbor], count, neighbor))
                         explored.add(neighbor)
-                        neighbor.set_nodeOpen_color()
+                        # neighbor.set_nodeOpen_color()
             draw()
             
-            if(current_node != start):
-                current_node.set_nodeVisited_color()
+            # if(current_node != start):
+            #     current_node.set_nodeVisited_color()
 
         #return False
     draw_solution(total_path, checklist[len(checklist) - 1], draw, checklist[0])
@@ -391,7 +388,7 @@ def recursive (draw, grid, start,end, goal_list):
                         return recursive (draw, grid, start, node, goal_list)
     # for node in path:
     #     print (node.x, node.y)
-    print("goal list: ",goal_list)
+    # print("goal list: ",goal_list)
 
 
 
@@ -434,12 +431,16 @@ def main(window, width, height):
                 astar_button.set_click()
                 astar_button.draw()
                 recursive(lambda: draw_update(window, grid, row, col,width,height), grid, start, end, goal_list)
-                grid,start,end = make_grid_color(row,col,width,height,temp_grid)
                 goal_list.reverse() 
                 goal_list.insert(0, start)
                 goal_list.append(end)
-                print(len(goal_list))
-                astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col,width,height),grid,goal_list)
+                path = astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col,width,height), grid, goal_list)
+                # for i in range (len(goal_list) -1):
+                #     path = astar_algorithm(lambda: draw_update(window, grid, row, col,width,height),grid,goal_list[i],goal_list[i+1])
+                #     draw_update(window, grid, row, col, width, height)
+                    
+                # path = astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col,width,height),grid,goal_list)
+                # draw_solution ()
                 #for i in range(len(goal_list)):
                     #print(goal_list[i].get_pos())
                     #astar_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, goal_list[i], goal_list[i+1])
