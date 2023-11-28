@@ -287,7 +287,7 @@ def astar_algorithm(draw, grid, start,end):
         # current_node.neighbors(grid)
         # check current node is an end => draw
         if current_node == end:
-            #draw_solution(come,end,draw,start)
+            draw_solution(come,end,draw,start)
             path = {}
             while end in come:   
                 path[come[end]] = end
@@ -434,6 +434,8 @@ def main(window, width, height):
                 goal_list.reverse() 
                 goal_list.insert(0, start)
                 goal_list.append(end)
+                for i in goal_list:
+                    print (i.text, end = " ")
                 path = astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col,width,height), grid, goal_list)
                 # for i in range (len(goal_list) -1):
                 #     path = astar_algorithm(lambda: draw_update(window, grid, row, col,width,height),grid,goal_list[i],goal_list[i+1])
