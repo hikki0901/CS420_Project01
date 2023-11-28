@@ -165,6 +165,50 @@ class Node:
             if check == True:
                 if grid[new_x][new_y] not in self.neighbor:
                     self.neighbor.append(grid[new_x][new_y])
+
+    def neighbors_door_valid(self,grid, collected_key):
+        self.neighbor = []
+        dir = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+
+        for dir in dir:
+            new_x = self.x + dir[0]
+            new_y = self.y + dir[1]
+            check = True
+
+            if (0 <= new_x < self.total_row and 0 <= new_y < self.total_col):
+                if abs(dir[0]) == abs(dir[1]):
+                    if grid[self.x][new_y].is_barrier() or grid[new_x][self.y].is_barrier() or grid[new_x][new_y].is_barrier():
+                        check = False
+                    
+                    if grid[new_x][self.y].is_door:
+                        key = "K" + str(grid[new_x][self.y].text[1])
+                        if key not in collected_key:
+                            check = False
+
+                    if grid[self.x][new_y].is_door:
+                        key = "K" + str(grid[self.x][new_y].text[1])
+                        if key not in collected_key:
+                            check = False
+                    
+                    if grid[new_x][new_y].is_door:
+                        key = "K" + str(grid[new_x][new_y].text[1])
+                        if key not in collected_key:
+                            check = False
+                                   
+                else:
+                    if grid[new_x][new_y].is_barrier():
+                        check = False
+                    
+                    if grid[new_x][new_y].is_door:
+                        key = "K" + str(grid[new_x][new_y].text[1])
+                        if key not in collected_key:
+                            check = False
+                    
+            else: check = False
+
+            if check == True:
+                if grid[new_x][new_y] not in self.neighbor:
+                    self.neighbor.append(grid[new_x][new_y])
     
     def __lt__(self,other):
         return False
@@ -273,7 +317,7 @@ def astar_algorithm(draw, grid, start,end):
             if event.type == pygame.QUIT:
                 pygame.quit()
         '''
-        # collected_key.clear()
+        #collected_key.clear()
         current_node = frontier.get()[2]
         
         # current = current_node
@@ -287,7 +331,7 @@ def astar_algorithm(draw, grid, start,end):
         # current_node.neighbors(grid)
         # check current node is an end => draw
         if current_node == end:
-            draw_solution(come,end,draw,start)
+            #draw_solution(come,end,draw,start)
             path = {}
             while end in come:   
                 path[come[end]] = end
@@ -317,8 +361,9 @@ def astar_algorithm(draw, grid, start,end):
     # print("collected key: ",collected_key)  
     return False
 
-def astar_algorithm_with_checkpoints(draw, grid, checklist):
+def astar_algorithm_with_checkpoints(draw, grid, checklist, collected_key):
     total_path = {}
+    collected_key.clear()
     for i in range(len(checklist) - 1):
         start = checklist[i]
         end = checklist[i + 1]
@@ -339,10 +384,27 @@ def astar_algorithm_with_checkpoints(draw, grid, checklist):
                 if event.type == pygame.QUIT:
                     pygame.quit()
 
+            #collected_key.clear()
             current_node = frontier.get()[2]
             
+            current = current_node
+            while current in come:   
+                if current.text.startswith("K"):
+                    key = str(current.text)
+                    if key not in collected_key:
+                        collected_key.add(key)    
+                current = come[current]
+            
+            if current_node == start and current_node.text.startswith("K"):
+                key = "K" + str(current_node.text[1])
+                collected_key.add(key)
             explored.remove(current_node)
-            current_node.neighbors(grid)
+            #if start.text.startswith("K"):
+            #    key = str(current_node.text)
+            #    if key not in collected_key:
+            #        collected_key.add(key)   
+            current_node.neighbors_door_valid(grid, collected_key)
+                
             if current_node == end:
                 draw_solution(come,end,draw,start)
                 path = {}
@@ -400,7 +462,8 @@ def main(window, width, height):
     click1 = False
     click4 = False
     one_press = True
-    
+    collected_key = set()
+
     run = True
     while run:
         window.fill(WHITE)
@@ -436,7 +499,7 @@ def main(window, width, height):
                 goal_list.append(end)
                 for i in goal_list:
                     print (i.text, end = " ")
-                path = astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col,width,height), grid, goal_list)
+                path = astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col,width,height), grid, goal_list, collected_key)
                 # for i in range (len(goal_list) -1):
                 #     path = astar_algorithm(lambda: draw_update(window, grid, row, col,width,height),grid,goal_list[i],goal_list[i+1])
                 #     draw_update(window, grid, row, col, width, height)
