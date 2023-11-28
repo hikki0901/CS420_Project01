@@ -65,7 +65,6 @@ class Node:
     def __init__(self,irow,jcol, width, height, total_row, total_col) -> None:
         self.color = WHITE
         self.neighbor=[]
-        self.width = width
         self.total_row = total_row
         self.x = irow
         self.y = jcol
@@ -212,7 +211,7 @@ def make_grid_color(row,col,width,height, grid):
 
             grid_color[i].append(node)
             
-    return grid_color,start,end    
+    return grid_color,start,end 
 
 def draw_grid_line(window,rows, cols,width, height):
     gap1 = height // rows
@@ -269,10 +268,11 @@ def astar_algorithm(draw, grid, start,end):
     f_cost[start] = heuristic(start.get_pos(), end.get_pos())
     explored = {start}
     while not frontier.empty():
+        '''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-
+        '''
         # collected_key.clear()
         current_node = frontier.get()[2]
         
@@ -287,7 +287,7 @@ def astar_algorithm(draw, grid, start,end):
         # current_node.neighbors(grid)
         # check current node is an end => draw
         if current_node == end:
-            draw_solution(come,end,draw,start)
+            #draw_solution(come,end,draw,start)
             path = {}
             while end in come:   
                 path[come[end]] = end
