@@ -386,6 +386,8 @@ def main(window, width, height):
                 goal_list.clear()
                 astar_button.remove_click()
                 astar_button.draw()
+                all_keys.clear()
+                collected_key.clear()
                 grid, start, end = make_grid_color(row, col, width, height, temp_grid)
             
             if((click1)):
