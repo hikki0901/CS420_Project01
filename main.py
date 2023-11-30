@@ -346,12 +346,16 @@ def recursive (draw, grid, start, end, goal_list, all_keys):
     path = astar_algorithm (draw, grid, start, end)
     for step in path:
         if step.text.startswith("D"):
+            if step in goal_list:
+                goal_list.remove(step)
             goal_list.append(step)
             key = "K" + str(step.text)[1]
             for node in all_keys:
                 if node.text == key:
+                    if node in goal_list:
+                        goal_list.remove(node)
                     goal_list.append(node)
-                    return recursive (draw, grid, start, node, goal_list, all_keys)
+                    recursive (draw, grid, start, node, goal_list, all_keys)
 
 
 def main(window, width, height):
@@ -400,12 +404,12 @@ def main(window, width, height):
                 astar_button.set_click()
                 astar_button.draw()
                 recursive(lambda: draw_update(window, grid, row, col, width, height), grid, start, end, goal_list, all_keys)
-                
+                #astar_algorithm(lambda: draw_update(window, grid, row, col, width, height), grid, start, end)  
+                #for i in goal_list:
+                #    print (i.text, end = " ")    
                 goal_list.reverse() 
                 goal_list.insert(0, start)
                 goal_list.append(end)
-                for i in goal_list:
-                    print (i.text, end = " ")
                 astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col, width, height), grid, goal_list, collected_key)
           
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
