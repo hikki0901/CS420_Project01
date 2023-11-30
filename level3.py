@@ -144,6 +144,7 @@ class Node:
         for i in grid[fl+1]:
             for node in i:
                 if(node.is_DO()):
+                    print("find DO")
                     return node
     
     def searchDO(self,grid,fl):
@@ -155,25 +156,17 @@ class Node:
     def neighbors(self, grid, collected_key, check_door):
         cur_floor = self.floor
         self.neighbor = []
-        dir = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+        direct = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
 
-        for dir in dir:
+        for dir in direct:
             new_x = self.x + dir[0]
             new_y = self.y + dir[1]
             check = True
-            check_UP = False
-            check_DO = False
             
             if (0 <= new_x < self.total_row and 0 <= new_y < self.total_col):
                 if abs(dir[0]) == abs(dir[1]):
                     if grid[cur_floor][self.x][new_y].is_barrier() or grid[cur_floor][new_x][self.y].is_barrier() or grid[cur_floor][new_x][new_y].is_barrier():
-                        check = False
-                    
-                    # if grid[cur_floor][self.x][new_y].is_UP() or grid[cur_floor][new_x][self.y].is_UP() or grid[cur_floor][new_x][new_y].is_UP():
-                    #     check_UP = True
-                        
-                    # if grid[cur_floor][self.x][new_y].is_DO() or grid[cur_floor][new_x][self.y].is_DO() or grid[cur_floor][new_x][new_y].is_UP():
-                    #     check_DO = True                    
+                        check = False                   
                     
                     if check_door ==True:
                         if grid[cur_floor][new_x][self.y].is_door:
@@ -194,10 +187,6 @@ class Node:
                 else:
                     if grid[cur_floor][new_x][new_y].is_barrier():
                         check = False
-                    # if grid[cur_floor][new_x][new_y].is_UP():
-                    #     check_UP = True
-                    # if grid[cur_floor][new_x][new_y].is_DO():
-                    #     check_DO = True
                     
                     if check_door == True:
                         if grid[cur_floor][new_x][new_y].is_door:
@@ -208,17 +197,18 @@ class Node:
             else: check = False
 
             if check == True:
-                # if(check_UP == True):
-                #     temp_node = self.searchUP(grid,cur_floor)
-                #     if temp_node not in self.neighbor:
-                #         self.neighbor.append(temp_node)
-                # elif check_DO ==True:
-                #     temp_node = self.searchDO(grid,cur_floor)
-                #     if temp_node not in self.neighbor:
-                #         self.neighbor.append(temp_node)
-                # else:
                 if grid[cur_floor][new_x][new_y] not in self.neighbor:
-                    self.neighbor.append(grid[cur_floor][new_x][new_y])
+                    #self.neighbor.append(grid[cur_floor][new_x][new_y])
+                    if(grid[cur_floor][new_x][new_y].is_UP()):
+                        temp_node = self.searchUP(grid,cur_floor)
+                        if temp_node not in self.neighbor:
+                            self.neighbor.append(temp_node)
+                    elif grid[cur_floor][new_x][new_y].is_DO():
+                        temp_node = self.searchDO(grid,cur_floor)
+                        if temp_node not in self.neighbor:
+                            self.neighbor.append(temp_node)
+                    else:
+                        self.neighbor.append(grid[cur_floor][new_x][new_y])
 
     def __lt__(self, other):
         return False
@@ -231,7 +221,7 @@ def read_grid_from_file():
     column = {}
     
     while i>=0:
-        file = 'grid'+str(i+1)+'.txt' 
+        file = 'gridd'+str(i+1)+'.txt' 
         print(file)
     
         if exists(file) == False:
@@ -279,7 +269,7 @@ def make_grid_color(row, col, width, height, grid,floor):
                 if(grid[k][i][j].startswith("UP")):
                     node.set_UP()
                     node.text = str(grid[k][i][j])
-                if(grid[k][i][j].startswith("DO")):
+                if(grid[k][i][j].startswith("OW")):
                     node.set_DO()
                     node.text = str(grid[k][i][j])
                 if(grid[k][i][j].startswith("D")):
@@ -309,7 +299,7 @@ def draw_update(window, grid, rows, cols, width, height,cur_floor):
     draw_grid_line(window, rows[cur_floor], cols[cur_floor], width, height)
     pygame.display.update()
 
-def draw_solution(come, current, window,row, col, width, height, start, grid,floor):
+def draw_solution(come, current, draw,row, col, width, height, start, grid,floor):
     path = {}
     print("t")
     while current in come:   
@@ -319,26 +309,25 @@ def draw_solution(come, current, window,row, col, width, height, start, grid,flo
     while start in path:
         if(start.get_floor() != floor):
             draw_update(window,grid,row, col, width, height,start.get_floor())
-        pygame.time.delay(100)
+        pygame.time.delay(5000)
         start.set_unvisible()
         start = path[start]
         start.set_path_color()
-        draw_update(window,grid,row, col, width, height,start.get_floor())
+        draw()
 
 def heuristic(start, end, start_floor, end_floor):
     x1, y1 = start
     x2, y2 = end
     return abs(x1 - x2) + abs(y1 - y2) + abs(start_floor-end_floor)^2
 
-def astar_algorithm(window, grid, start, end, floor):
+def astar_algorithm(draw,row, col, width, height, grid, start, end, floor):
     count = 0
     frontier = PriorityQueue()
     frontier.put((0, count, start))
     come = {}
-    cfloor = start.get_floor()
-    g_cost ={node: float("inf") for i in grid[cfloor] for node in i}
+    g_cost ={node: float("inf") for k in range(floor) for i in grid[k] for node in i}
     g_cost[start] =0
-    f_cost = {node: float("inf") for i in grid[cfloor] for node in i}
+    f_cost = {node: float("inf") for k in range(floor) for i in grid[k] for node in i}
     f_cost[start] = heuristic(start.get_pos(), end.get_pos(), start.get_floor(), end.get_floor())
     explored = {start}
 
@@ -348,18 +337,15 @@ def astar_algorithm(window, grid, start, end, floor):
         explored.remove(current_node)
 
         if current_node == end:
-            #draw_solution(come,end,draw,start)
-            path = {}
-            while end in come:   
-                path[come[end]] = end
-                end = come[end]
-            return path
+
+            draw_solution(come,end,draw,row, col, width, height,start,grid,start.get_floor())
+            # path = {}
+            # while end in come:   
+            #     path[come[end]] = end
+            #     end = come[end]
+            # return path
         for neighbor in current_node.neighbor:
-            if(neighbor.get_floor() != current_node.get_floor()):
-                neighborFloor = neighbor.get_floor()
-                lig_cost ={node: float("inf") for i in grid[neighborFloor] for node in i}
-                g_cost.append(lig_cost)
-            temp_g_cost = g_cost[neighbor]+1
+            temp_g_cost = g_cost[current_node]+1
             if temp_g_cost < g_cost[neighbor]:
                 come[neighbor] = current_node
                 
@@ -376,7 +362,7 @@ def astar_algorithm(window, grid, start, end, floor):
 
     return False
 
-def astar_algorithm_with_checkpoints(window,  row, col, width, height, grid, checklist, collected_key,floor):
+def astar_algorithm_with_checkpoints(draw,  row, col, width, height, grid, checklist, collected_key,floor):
     collected_key.clear()
     for i in range(len(checklist) - 1):
         start = checklist[i]
@@ -407,7 +393,7 @@ def astar_algorithm_with_checkpoints(window,  row, col, width, height, grid, che
             current_node.neighbors(grid, collected_key, True)
                 
             if current_node == end:
-                draw_solution(come, end, window,row, col, width, height, start,grid,start.get_floor())
+                draw_solution(come, end,row, col, width, height, start,grid,start.get_floor())
                 path = {}
                 while end in come:   
                     path[come[end]] = end
@@ -457,48 +443,53 @@ def main(window, width, height):
         
         astar_button = Button(10, 10, "Go", click1)
         clear_button = Button(400, 10, "Clear", click4)
-        draw_update(window,grid,row,col,width,height,current_floor)     
-        
-        if(pygame.mouse.get_pressed()[0]) and one_press:
-            one_press = False             
-            if(astar_button.is_click()):
-                click1 = True
-                click4 = False
-                clear_button.remove_click()
-                clear_button.draw()
+        draw_update(window,grid,row,col,width,height,current_floor)
+        for k in range(floor):
+            for i in grid[k]:
+                for node in i:
+                    node.neighbors(grid,collected_key,False)     
+        astar_algorithm(lambda: draw_update(window, grid, row, col, width, height,current_floor),row, col, width, height, grid,start,end,floor)
+        # if(pygame.mouse.get_pressed()[0]) and one_press:
+        #     one_press = False             
+        #     if(astar_button.is_click()):
+        #         click1 = True
+        #         click4 = False
+        #         clear_button.remove_click()
+        #         clear_button.draw()
                 
                 
-            if(clear_button.is_click()):
-                click4 = True
-                click1 = False
-                goal_list.clear()
-                astar_button.remove_click()
-                astar_button.draw()
-                all_keys.clear()
-                collected_key.clear()
-                grid, start, end = make_grid_color(row, col, width, height, temp_grid,floor)
+        #     if(clear_button.is_click()):
+        #         click4 = True
+        #         click1 = False
+        #         # goal_list.clear()
+        #         # astar_button.remove_click()
+        #         # astar_button.draw()
+        #         # all_keys.clear()
+        #         # collected_key.clear()
+        #         grid, start, end = make_grid_color(row, col, width, height, temp_grid,floor)
             
-            if((click1)):
-                for tfloor in range(floor):
-                    for i in grid[tfloor]:
-                        for node in i:
-                            node.neighbors(grid, collected_key, False)
-                            if node.text.startswith("K") or node.text =="UP" or node.text =="DO" :
-                                all_keys.append(node)
+        #     if((click1)):
+        #         # for tfloor in range(floor):
+        #         #     for i in grid[tfloor]:
+        #         #         for node in i:
+        #         #             node.neighbors(grid, collected_key, False)
+        #         #             if node.text.startswith("K") or node.text =="UP" or node.text =="DO" :
+        #         #                 all_keys.append(node)
                 
-                astar_button.set_click()
-                astar_button.draw()
-                recursive(lambda: draw_update(window, grid, row, col, width, height,current_floor), grid, start, end, goal_list, all_keys,current_floor)
+        #         # astar_button.set_click()
+        #         # astar_button.draw()
+        #         # recursive(lambda: draw_update(window, grid, row, col, width, height,current_floor), grid, start, end, goal_list, all_keys,floor)
                 
-                goal_list.reverse() 
-                goal_list.insert(0, start)
-                goal_list.append(end)
-                for i in goal_list:
-                    print (i.text, end = " ")
-                astar_algorithm_with_checkpoints(window,  row, col, width, height, grid, goal_list, collected_key,current_floor)
+        #         # goal_list.reverse() 
+        #         # goal_list.insert(0, start)
+        #         # goal_list.append(end)
+        #         # for i in goal_list:
+        #         #     print (i.text, end = " ")
+        #         # astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col, width, height),  row, col, width, height, grid, goal_list, collected_key,current_floor)
+        #         astar_algorithm(lambda: draw_update(window, grid, row, col, width, height,current_floor), grid,start,end,floor)
           
-        if(not pygame.mouse.get_pressed()[0]) and not one_press:
-            one_press = True
+        # if(not pygame.mouse.get_pressed()[0]) and not one_press:
+        #     one_press = True
              
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
