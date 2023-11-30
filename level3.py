@@ -169,17 +169,17 @@ class Node:
                     
                     if check_door ==True:
                         if grid[cur_floor][new_x][self.y].is_door:
-                            key = "K" + str(grid[cur_floor][new_x][self.y].text[1])
+                            key = "K" + str(grid[cur_floor][new_x][self.y].text[1:])
                             if key not in collected_key:
                                 check = False
 
                         if grid[cur_floor][self.x][new_y].is_door:
-                            key = "K" + str(grid[cur_floor][self.x][new_y].text[1])
+                            key = "K" + str(grid[cur_floor][self.x][new_y].text[1:])
                             if key not in collected_key:
                                 check = False
                         
                         if grid[cur_floor][new_x][new_y].is_door:
-                            key = "K" + str(grid[cur_floor][new_x][new_y].text[1])
+                            key = "K" + str(grid[cur_floor][new_x][new_y].text[1:])
                             if key not in collected_key:
                                 check = False
 
@@ -337,13 +337,11 @@ def astar_algorithm(draw,row, col, width, height, grid, start, end, floor):
         explored.remove(current_node)
 
         if current_node == end:
-            frontier.queue.clear()
             #draw_solution(come,end,draw,row, col, width, height,start,grid,start.get_floor())
             path = {}
             while end in come:   
                 path[come[end]] = end
                 end = come[end]
-            come.clear()
             return path
         for neighbor in current_node.neighbor:
             temp_g_cost = g_cost[current_node]+1
@@ -388,7 +386,7 @@ def astar_algorithm_with_checkpoints(draw,  row, col, width, height, grid, check
             current_node = frontier.get()[2]
 
             if current_node == start and current_node.text.startswith("K"):
-                key = "K" + str(current_node.text[1])
+                key = "K" + str(current_node.text[1:])
                 collected_key.add(key)
             explored.remove(current_node)  
             current_node.neighbors(grid, collected_key, True)
@@ -406,7 +404,6 @@ def astar_algorithm_with_checkpoints(draw,  row, col, width, height, grid, check
                 
                 if temp_g_cost < g_cost[neighbor]:
                     come[neighbor] = current_node
-                    
                     g_cost[neighbor] = temp_g_cost
                     f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(), end.get_pos(),neighbor.get_floor(),end.get_floor())
                     if neighbor not in explored:
