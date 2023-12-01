@@ -214,42 +214,52 @@ class Node:
 
 
 def read_grid_from_file():
-    i =0
     grid = []
-    row ={}
-    column = {}
+    max_floor = 0
     
-    while i>=0:
-        file = 'grid'+str(i+1)+'.txt' 
-        print(file)
-    
-        if exists(file) == False:
-            print("File does not exist")
-            break
-    
-        with open(file,'r') as file:
-            row[i] , column[i] = map(int, file.readline().strip().split(','))
-            floor = file.readline().strip().split(',')
+    file = 'grid1.txt'
+
+    if not exists(file):
+        print("File does not exist")
+        return
+
+    with open(file, 'r') as file:
+        row, column = map(int, file.readline().strip().split(','))
+        line = file.readline()
+        while line:
+            if(not line):
+                print("end of line")
+                return
+            floor = line.strip().replace("[", "").replace("]", "")
+            if not floor.startswith("floor"):
+                continue  # Skip lines that are not floor data
             
-            grid.append([[0] * column[i] for _ in range(row[i])])
+            i = int(floor[5])
             
-            for j in range(row[i]):
-                data = file.readline().strip().split(',')
-                grid[i][j] = data
-        i += 1
-    return row, column, i, grid
+            if i > max_floor:
+                max_floor = i
+                grid.append([[0] * column for _ in range(row)])
+            
+            
+            
+            for j in range(row):
+                line = file.readline()
+                data = line.strip().split(',')
+                grid[i-1][j] = data
+                
+            line = file.readline()
+                
+    return row, column, max_floor, grid
 
 def make_grid_color(row, col, width, height, grid,floor):
     grid_color = []
     start = None
     end = None
     for k in range(floor):
-        nrow = row[k]
-        ncol = col[k]
-        grid_color.append([[0] * ncol for _ in range(nrow)])
-        for i in range(nrow):
-            for j in range(ncol):
-                node = Node(i, j, width // ncol, height // nrow, nrow, ncol,k)
+        grid_color.append([[0] * col for _ in range(row)])
+        for i in range(row):
+            for j in range(col):
+                node = Node(i, j, width // col, height // row, row, col,k)
 
                 if(grid[k][i][j] == "A1"):
                     node.set_start_color()
@@ -295,7 +305,7 @@ def draw_update(window, grid, rows, cols, width, height,cur_floor):
         for node in i:
             node.draw(window,cur_floor)
             
-    draw_grid_line(window, rows[cur_floor], cols[cur_floor], width, height)
+    draw_grid_line(window, rows, cols, width, height)
     pygame.display.update()
 
 def draw_solution(come, current, draw,row, col, width, height, start, grid,floor):
@@ -436,7 +446,7 @@ def recursive (draw,row, col, width, height, grid, start, end, goal_list, all_ke
 
 
 def main(window, width, height):
-    row, col, floor, temp_grid = read_grid_from_file() 
+    row, col, floor, temp_grid = read_grid_from_file()
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
     goal_list = []
     all_keys = []
