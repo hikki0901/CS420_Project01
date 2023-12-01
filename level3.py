@@ -320,10 +320,9 @@ def draw_solution(come, current,row, col, width, height, start, grid,floor):
         current = come[current]
 
     while start in path:
-        
         pygame.draw.rect(window, WHITE, fill_area_rect)
         draw_update(window,grid,row, col, width, height,start.get_floor())
-        pygame.time.delay(500)
+        pygame.time.delay(100)
         start.set_unvisible()
         start = path[start]
         start.set_path_color()
@@ -454,12 +453,16 @@ def main(window, width, height):
     collected_key = set()
     current_floor = start.get_floor()
     run = True
+    done = False
     while run:
         window.fill(WHITE)
         
         astar_button = Button(10, 10, "Go", click1)
         clear_button = Button(400, 10, "Clear", click4)
-        draw_update(window,grid,row,col,width,height,current_floor)
+        if(done == False):
+            draw_update(window,grid,row,col,width,height,current_floor)
+        else:
+            draw_update(window,grid,row,col,width,height,end.get_floor())
         # for k in range(floor):
         #     for i in grid[k]:
         #         for node in i:
@@ -482,6 +485,7 @@ def main(window, width, height):
                 astar_button.draw()
                 all_keys.clear()
                 collected_key.clear()
+                done =False
                 grid, start, end = make_grid_color(row, col, width, height, temp_grid,floor)
             
             if((click1)):
@@ -502,6 +506,9 @@ def main(window, width, height):
                 for i in goal_list:
                     print (i.text, end = " ")
                 astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor)
+                done = True
+                end.set_start_color()
+                draw_update(window,grid,row,col,width,height,end.get_floor())
           
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press = True
