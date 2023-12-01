@@ -314,7 +314,6 @@ def draw_update(window, grid, rows, cols, width, height,cur_floor):
 
 def draw_solution(come, current,row, col, width, height, start, grid,floor):
     path = {}
-    print("t")
     while current in come:   
         path[come[current]] = current
         current = come[current]
