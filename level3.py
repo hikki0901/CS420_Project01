@@ -14,6 +14,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (15, 10, 222)
 GREY = (128, 128, 128)
+VSBLUE = (192,250,244)
 IRISBLUE = (0, 181, 204)
 PINK = (255, 105, 180)
 LIGHTGREEN = (208,242,136)
@@ -74,6 +75,14 @@ class Node:
         self.text = ""
         self.floor = floor
         self.is_door = False
+        self.visit_count = 0
+    
+    def increment_visit_count(self):
+        self.visit_count +=1
+    
+    def set_heatmap_color(self):
+        intensity = min(192, int(self.visit_count * 8))
+        self.color = (192-intensity,250-intensity,244-intensity)
     
     def get_floor(self):
         return self.floor
@@ -110,7 +119,7 @@ class Node:
         self.color = RED
     
     def set_unvisible(self):
-        self.color =IRISBLUE
+        self.color =VSBLUE
 
     def set_key(self):
         self.color = PINK
@@ -213,11 +222,9 @@ class Node:
         return False
 
 
-def read_grid_from_file():
+def read_grid_from_file(file):
     grid = []
     max_floor = 0
-    
-    file = 'grid1.txt'
 
     if not exists(file):
         print("File does not exist")
@@ -323,6 +330,8 @@ def draw_solution(come, current,row, col, width, height, start, grid,floor):
         draw_update(window,grid,row, col, width, height,start.get_floor())
         pygame.time.delay(100)
         start.set_unvisible()
+        start.increment_visit_count()
+        start.set_heatmap_color()
         start = path[start]
         start.set_path_color()
         draw_update(window,grid,row, col, width, height,start.get_floor())
@@ -442,7 +451,8 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
 
 
 def main(window, width, height):
-    row, col, floor, temp_grid = read_grid_from_file()
+    file = 'input1-level3.txt'
+    row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
     goal_list = []
     all_keys = []

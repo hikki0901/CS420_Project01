@@ -13,6 +13,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BLUE = (15, 10, 222)
 GREY = (128, 128, 128)
+VSBLUE = (192,250,244)
 IRISBLUE = (0, 181, 204)
 PINK = (255, 105, 180)
 
@@ -70,6 +71,14 @@ class Node:
         self.total_col = total_col
         self.text = ""
         self.is_door = False
+        self.visit_count = 0
+        
+    def increment_visit_count(self):
+        self.visit_count +=1
+    
+    def set_heatmap_color(self):
+        intensity = min(192, int(self.visit_count * 8))
+        self.color = (192-intensity,250-intensity,244-intensity)
     
     def get_pos(self):
         return self.x, self.y
@@ -99,7 +108,7 @@ class Node:
         self.color = RED
     
     def set_unvisible(self):
-        self.color =IRISBLUE
+        self.color =VSBLUE
 
     def set_key(self):
         self.color = PINK
@@ -238,6 +247,8 @@ def draw_solution(come, current, draw, start):
     while start in path:
         pygame.time.delay(100)
         start.set_unvisible()
+        start.increment_visit_count()
+        start.set_heatmap_color()
         start = path[start]
         start.set_path_color()
         draw()
@@ -359,7 +370,7 @@ def recursive (draw, grid, start, end, goal_list, all_keys):
 
 
 def main(window, width, height):
-    file = 'grid.txt'
+    file = 'input1-level2.txt'
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid)
     goal_list = []
