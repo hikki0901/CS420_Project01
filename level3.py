@@ -81,7 +81,7 @@ class Node:
         self.visit_count +=1
     
     def set_heatmap_color(self):
-        intensity = min(192, int(self.visit_count * 8))
+        intensity = min(192, int(self.visit_count * 36))
         self.color = (192-intensity,250-intensity,244-intensity)
     
     def get_floor(self):
