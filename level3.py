@@ -303,12 +303,16 @@ def draw_grid_line(window, rows, cols, width, height):
 def draw_update(window, grid, rows, cols, width, height,cur_floor): 
     for i in grid[cur_floor]:
         for node in i:
+            if(node.text == "DO"):
+                node.set_DO()
+            if(node.text == "UP"):
+                node.set_UP()
             node.draw(window,cur_floor)
             
     draw_grid_line(window, rows, cols, width, height)
     pygame.display.update()
 
-def draw_solution(come, current, draw,row, col, width, height, start, grid,floor):
+def draw_solution(come, current,row, col, width, height, start, grid,floor):
     path = {}
     print("t")
     while current in come:   
@@ -316,19 +320,13 @@ def draw_solution(come, current, draw,row, col, width, height, start, grid,floor
         current = come[current]
 
     while start in path:
-        if(start.get_floor() != floor):
-            pygame.draw.rect(window, WHITE, fill_area_rect)
-            draw_update(window,grid,row, col, width, height,start.get_floor())
+        
+        pygame.draw.rect(window, WHITE, fill_area_rect)
+        draw_update(window,grid,row, col, width, height,start.get_floor())
         pygame.time.delay(500)
-        if(start.is_DO() == False or start.is_UP() == False):
-            start.set_unvisible()
-        if(path[start].is_DO()):
-            start.set_DO()
-        if(path[start].is_UP()):
-            start.set_UP()
+        start.set_unvisible()
         start = path[start]
-        if(start.is_DO() == False or start.is_UP() == False):
-            start.set_path_color()
+        start.set_path_color()
         draw_update(window,grid,row, col, width, height,start.get_floor())
 
 def heuristic(start, end, start_floor, end_floor):
@@ -336,7 +334,7 @@ def heuristic(start, end, start_floor, end_floor):
     x2, y2 = end
     return abs(x1 - x2) + abs(y1 - y2) + abs(start_floor-end_floor)
 
-def astar_algorithm(draw,row, col, width, height, grid, start, end, floor):
+def astar_algorithm(row, col, width, height, grid, start, end, floor):
     count = 0
     frontier = PriorityQueue()
     frontier.put((0, count, start))
@@ -377,7 +375,7 @@ def astar_algorithm(draw,row, col, width, height, grid, start, end, floor):
 
     return False
 
-def astar_algorithm_with_checkpoints(draw,  row, col, width, height, grid, checklist, collected_key,floor):
+def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, collected_key,floor):
     collected_key.clear()
     for i in range(len(checklist) - 1):
         start = checklist[i]
@@ -408,7 +406,7 @@ def astar_algorithm_with_checkpoints(draw,  row, col, width, height, grid, check
             current_node.neighbors(grid, collected_key, True)
                 
             if current_node == end:
-                draw_solution(come, end,draw,row, col, width, height, start,grid,start.get_floor())
+                draw_solution(come, end,row, col, width, height, start,grid,start.get_floor())
                 path = {}
                 while end in come:   
                     path[come[end]] = end
@@ -428,8 +426,8 @@ def astar_algorithm_with_checkpoints(draw,  row, col, width, height, grid, check
                         explored.add(neighbor)
             #draw()
 
-def recursive (draw,row, col, width, height, grid, start, end, goal_list, all_keys,floor):
-    path = astar_algorithm(draw,row, col, width, height, grid, start, end,floor)
+def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,floor):
+    path = astar_algorithm(row, col, width, height, grid, start, end,floor)
     if(path):
         for step in path:
             if step.text != "DO" and step.text.startswith("D"):
@@ -442,7 +440,7 @@ def recursive (draw,row, col, width, height, grid, start, end, goal_list, all_ke
                         if node in goal_list:
                             goal_list.remove(node)
                         goal_list.append(node)
-                        recursive (draw,row, col, width, height, grid, start, node, goal_list, all_keys,floor)
+                        recursive (row, col, width, height, grid, start, node, goal_list, all_keys,floor)
 
 
 def main(window, width, height):
@@ -496,14 +494,14 @@ def main(window, width, height):
                 
                 astar_button.set_click()
                 astar_button.draw()
-                recursive(lambda: draw_update(window, grid, row, col, width, height,current_floor),row, col, width, height, grid, start, end, goal_list, all_keys,floor)
+                recursive(row, col, width, height, grid, start, end, goal_list, all_keys,floor)
                 
                 goal_list.reverse() 
                 goal_list.insert(0, start)
                 goal_list.append(end)
                 for i in goal_list:
                     print (i.text, end = " ")
-                astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col, width, height,current_floor),  row, col, width, height, grid, goal_list, collected_key,floor)
+                astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor)
           
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press = True
