@@ -254,9 +254,12 @@ def draw_solution(come, current, draw, start):
         draw()
 
 def heuristic(start, end):
-    x1, y1 = start
-    x2, y2 = end
-    return abs(x1 - x2) + abs(y1 - y2)
+    x1, y1 = start.get_pos()
+    x2, y2 = end.get_pos()
+    penalty = 0
+    if start.text.startswith("D"):
+        penalty = 1
+    return abs(x1 - x2) + abs(y1 - y2) #+ penalty * 100
 
 def astar_algorithm(draw, grid, start, end):
     count = 0
@@ -267,7 +270,7 @@ def astar_algorithm(draw, grid, start, end):
     g_cost ={node: float("inf") for i in grid for node in i}
     g_cost[start] =0
     f_cost = {node: float("inf") for i in grid for node in i}
-    f_cost[start] = heuristic(start.get_pos(), end.get_pos())
+    f_cost[start] = heuristic(start, end)
     explored = {start}
 
     while not frontier.empty():
@@ -289,7 +292,7 @@ def astar_algorithm(draw, grid, start, end):
                 come[neighbor] = current_node
                 
                 g_cost[neighbor] = temp_g_cost
-                f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(), end.get_pos())
+                f_cost[neighbor] = temp_g_cost + heuristic(neighbor, end)
                 if neighbor not in explored:
                     count += 1
                     frontier.put((f_cost[neighbor], count, neighbor))
@@ -314,7 +317,7 @@ def astar_algorithm_with_checkpoints(draw, grid, checklist, collected_key):
         g_cost ={node: float("inf") for i in grid for node in i}
         g_cost[start] =0
         f_cost = {node: float("inf") for i in grid for node in i}
-        f_cost[start] = heuristic(start.get_pos(), end.get_pos())
+        f_cost[start] = heuristic(start, end)
         
         explored = {start}
         
@@ -346,7 +349,7 @@ def astar_algorithm_with_checkpoints(draw, grid, checklist, collected_key):
                     come[neighbor] = current_node
                     
                     g_cost[neighbor] = temp_g_cost
-                    f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(), end.get_pos())
+                    f_cost[neighbor] = temp_g_cost + heuristic(neighbor, end)
                     if neighbor not in explored:
                         count += 1
                         frontier.put((f_cost[neighbor], count, neighbor))
@@ -357,17 +360,25 @@ def recursive (draw, grid, start, end, goal_list, all_keys):
     path = astar_algorithm (draw, grid, start, end)
     for step in path:
         if step.text.startswith("D"):
-            if step in goal_list:
-                goal_list.remove(step)
-            goal_list.append(step)
+            check = False
             key = "K" + str(step.text)[1]
             for node in all_keys:
                 if node.text == key:
                     if node in goal_list:
-                        goal_list.remove(node)
-                    goal_list.append(node)
-                    recursive (draw, grid, start, node, goal_list, all_keys)
+                        check = True
+            if check == True:
+                continue
+            else:
+                if step in goal_list:
+                    goal_list.remove(step)
+                goal_list.append(step)
 
+                for node in all_keys:
+                    if node.text == key:
+                        if node in goal_list:
+                            goal_list.remove(node)
+                        goal_list.append(node)
+                        recursive (draw, grid, start, node, goal_list, all_keys)
 
 def main(window, width, height):
     file = 'input1-level2.txt'
@@ -416,11 +427,12 @@ def main(window, width, height):
                 astar_button.draw()
                 recursive(lambda: draw_update(window, grid, row, col, width, height), grid, start, end, goal_list, all_keys)
                 #astar_algorithm(lambda: draw_update(window, grid, row, col, width, height), grid, start, end)  
-                #for i in goal_list:
-                #    print (i.text, end = " ")    
+                
                 goal_list.reverse() 
                 goal_list.insert(0, start)
                 goal_list.append(end)
+                for i in goal_list:
+                    print (i.text, end = " ")    
                 astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col, width, height), grid, goal_list, collected_key)
           
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
