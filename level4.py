@@ -217,7 +217,7 @@ def read_grid_from_file():
     grid = []
     max_floor = 0
     
-    file = 'grid1.txt'
+    file = 'level4_input1.txt'
 
     if not exists(file):
         print("File does not exist")
@@ -261,13 +261,17 @@ def make_grid_color(row, col, width, height, grid,floor):
             for j in range(col):
                 node = Node(i, j, width // col, height // row, row, col,k)
 
-                if(grid[k][i][j] == "A1"):
+                if(grid[k][i][j].startswith("A")):
                     node.set_start_color()
-                    start = node
+                    node.text = str(grid[k][i][j])
+                    if (grid[k][i][j].startswith("A1")):
+                        start = node
 
-                if(grid[k][i][j] == "T1"):
+                if(grid[k][i][j].startswith("T")):
                     node.set_end_color()
-                    end = node
+                    node.text = str(grid[k][i][j])
+                    if (grid[k][i][j].startswith("T1")):
+                        end = node
 
                 if(grid[k][i][j] == "-1"):
                     node.set_barrier_color()
@@ -440,8 +444,28 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
                         goal_list.append(node)
                         recursive (row, col, width, height, grid, start, node, goal_list, all_keys,floor)
 
+def define_agent_target(grid):
+    agent_list = []
+    target_list = []
+    for k in range(len(grid)):
+        for i in range(len(grid[0])):
+            for j in range(len(grid[0][0])):
+                if grid[k][i][j].text.startswith("A"):
+                    agent_list.append(grid[k][i][j])
+
+    for agent in agent_list:
+        for k in range(len(grid)):
+            for i in range(len(grid[0])):
+                for j in range(len(grid[0][0])):
+                    if grid[k][i][j].text.startswith("T"):
+                        if grid[k][i][j].text[1] == agent.text[1]:
+                            target_list.append(grid[k][i][j])
+    
+    return agent_list,target_list
+
 
 def main(window, width, height):
+    agent_target = []
     row, col, floor, temp_grid = read_grid_from_file()
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
     goal_list = []
@@ -495,16 +519,27 @@ def main(window, width, height):
                             if node.text.startswith("K"):
                                 all_keys.append(node)
                 
+                agent_list, target_list = define_agent_target(grid)
+                agent_target = list(zip(agent_list,target_list))
+                
                 astar_button.set_click()
                 astar_button.draw()
-                recursive(row, col, width, height, grid, start, end, goal_list, all_keys,floor)
+
+                for agent in agent_target:
+                    tmp_goal_list = []
+                    recursive(row, col, width, height, grid, agent[0], agent[1], tmp_goal_list, all_keys, floor)
+                    tmp_goal_list.reverse() 
+                    tmp_goal_list.insert(0, agent[0])
+                    tmp_goal_list.append(agent[1])
+                    goal_list.append(tmp_goal_list)
                 
-                goal_list.reverse() 
-                goal_list.insert(0, start)
-                goal_list.append(end)
-                for i in goal_list:
-                    print (i.text, end = " ")
-                astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor)
+                
+                # goal_list.reverse() 
+                # goal_list.insert(0, start)
+                # goal_list.append(end)
+                # for i in goal_list:
+                #     print (i.text, end = " ")
+                # astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor)
                 done = True
                 end.set_start_color()
                 draw_update(window,grid,row,col,width,height,end.get_floor())
