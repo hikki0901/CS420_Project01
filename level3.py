@@ -268,11 +268,11 @@ def make_grid_color(row, col, width, height, grid,floor):
                 if(grid[k][i][j].startswith("UP")):
                     node.set_UP()
                     node.text = str(grid[k][i][j])
-                if(grid[k][i][j].startswith("OW")):
-                    node.set_DO()
-                    node.text = str(grid[k][i][j])
-                if(grid[k][i][j].startswith("D")):
+                if(grid[k][i][j] != "DO" and grid[k][i][j].startswith("D")):
                     node.set_door()
+                    node.text = str(grid[k][i][j])
+                if(grid[k][i][j].startswith("DO")):
+                    node.set_DO()
                     node.text = str(grid[k][i][j])
                     
                 grid_color[k][i][j]=node
@@ -310,9 +310,15 @@ def draw_solution(come, current, draw,row, col, width, height, start, grid,floor
             pygame.draw.rect(window, WHITE, fill_area_rect)
             draw_update(window,grid,row, col, width, height,start.get_floor())
         pygame.time.delay(500)
-        start.set_unvisible()
+        if(start.is_DO() == False or start.is_UP() == False):
+            start.set_unvisible()
+        if(path[start].is_DO()):
+            start.set_DO()
+        if(path[start].is_UP()):
+            start.set_UP()
         start = path[start]
-        start.set_path_color()
+        if(start.is_DO() == False or start.is_UP() == False):
+            start.set_path_color()
         draw_update(window,grid,row, col, width, height,start.get_floor())
 
 def heuristic(start, end, start_floor, end_floor):
@@ -416,13 +422,17 @@ def recursive (draw,row, col, width, height, grid, start, end, goal_list, all_ke
     path = astar_algorithm(draw,row, col, width, height, grid, start, end,floor)
     if(path):
         for step in path:
-            if step.text.startswith("D"):
+            if step.text != "DO" and step.text.startswith("D"):
+                if step in goal_list:
+                    goal_list.remove(step)
                 goal_list.append(step)
-                key = "K" + str(step.text)[1:]
+                key = "K" + str(step.text)[1]
                 for node in all_keys:
                     if node.text == key:
+                        if node in goal_list:
+                            goal_list.remove(node)
                         goal_list.append(node)
-                        return recursive (draw,row, col, width, height, grid, start, node, goal_list, all_keys,floor)
+                        recursive (draw,row, col, width, height, grid, start, node, goal_list, all_keys,floor)
 
 
 def main(window, width, height):
