@@ -328,7 +328,7 @@ def draw_solution(come, current,row, col, width, height, start, grid,floor):
     while start in path:
         pygame.draw.rect(window, WHITE, fill_area_rect)
         draw_update(window,grid,row, col, width, height,start.get_floor())
-        pygame.time.delay(100)
+        pygame.time.delay(200)
         start.set_unvisible()
         start.increment_visit_count()
         start.set_heatmap_color()
@@ -438,16 +438,25 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
     if(path):
         for step in path:
             if step.text != "DO" and step.text.startswith("D"):
-                if step in goal_list:
-                    goal_list.remove(step)
-                goal_list.append(step)
+                check = False
                 key = "K" + str(step.text)[1]
                 for node in all_keys:
                     if node.text == key:
                         if node in goal_list:
-                            goal_list.remove(node)
-                        goal_list.append(node)
-                        recursive (row, col, width, height, grid, start, node, goal_list, all_keys,floor)
+                            check = True
+                if check == True:
+                    continue
+                else:
+                    if step in goal_list:
+                        goal_list.remove(step)
+                    goal_list.append(step)
+
+                    for node in all_keys:
+                        if node.text == key:
+                            if node in goal_list:
+                                goal_list.remove(node)
+                            goal_list.append(node)
+                            recursive (row, col, width, height, grid, start, node, goal_list, all_keys,floor)
 
 
 def main(window, width, height):
