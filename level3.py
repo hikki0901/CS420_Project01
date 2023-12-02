@@ -441,25 +441,16 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
     if(path):
         for step in path:
             if step.text != "DO" and step.text.startswith("D"):
-                check = False
+                if step in goal_list:
+                    goal_list.remove(step)
+                goal_list.append(step)
                 key = "K" + str(step.text)[1]
                 for node in all_keys:
                     if node.text == key:
                         if node in goal_list:
-                            check = True
-                if check == True:
-                    continue
-                else:
-                    if step in goal_list:
-                        goal_list.remove(step)
-                    goal_list.append(step)
-
-                    for node in all_keys:
-                        if node.text == key:
-                            if node in goal_list:
-                                goal_list.remove(node)
-                            goal_list.append(node)
-                            recursive (row, col, width, height, grid, start, node, goal_list, all_keys,floor)
+                            goal_list.remove(node)
+                        goal_list.append(node)
+                        recursive (row, col, width, height, grid, start, node, goal_list, all_keys,floor)
 
 
 def main(window, width, height):
