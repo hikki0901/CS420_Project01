@@ -328,7 +328,7 @@ def draw_solution(come, current,row, col, width, height, start, grid,floor):
     while start in path:
         pygame.draw.rect(window, WHITE, fill_area_rect)
         draw_update(window,grid,row, col, width, height,start.get_floor())
-        pygame.time.delay(200)
+        pygame.time.delay(100)
         start.set_unvisible()
         start.increment_visit_count()
         start.set_heatmap_color()
@@ -337,9 +337,12 @@ def draw_solution(come, current,row, col, width, height, start, grid,floor):
         draw_update(window,grid,row, col, width, height,start.get_floor())
 
 def heuristic(start, end, start_floor, end_floor):
-    x1, y1 = start
-    x2, y2 = end
-    return abs(x1 - x2) + abs(y1 - y2) + abs(start_floor-end_floor)
+    x1, y1 = start.get_pos()
+    x2, y2 = end.get_pos()
+    penalty = 0
+    if start.text.startswith("D"):
+        penalty = 1
+    return abs(x1 - x2) + abs(y1 - y2) + abs(start_floor-end_floor) + penalty * 100
 
 def astar_algorithm(row, col, width, height, grid, start, end, floor):
     count = 0
@@ -349,7 +352,7 @@ def astar_algorithm(row, col, width, height, grid, start, end, floor):
     g_cost ={node: float("inf") for k in range(floor) for i in grid[k] for node in i}
     g_cost[start] =0
     f_cost = {node: float("inf") for k in range(floor) for i in grid[k] for node in i}
-    f_cost[start] = heuristic(start.get_pos(), end.get_pos(), start.get_floor(), end.get_floor())
+    f_cost[start] = heuristic(start, end, start.get_floor(), end.get_floor())
     explored = {start}
 
     while not frontier.empty():
@@ -370,7 +373,7 @@ def astar_algorithm(row, col, width, height, grid, start, end, floor):
                 come[neighbor] = current_node
                 
                 g_cost[neighbor] = temp_g_cost
-                f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(), end.get_pos(),neighbor.get_floor(),end.get_floor())
+                f_cost[neighbor] = temp_g_cost + heuristic(neighbor, end,neighbor.get_floor(),end.get_floor())
                 if neighbor not in explored:
                     count += 1
                     frontier.put((f_cost[neighbor], count, neighbor))
@@ -395,7 +398,7 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
         g_cost ={node: float("inf") for k in range(floor) for i in grid[k] for node in i}
         g_cost[start] =0
         f_cost = {node: float("inf") for k in range(floor) for i in grid[k] for node in i}
-        f_cost[start] = heuristic(start.get_pos(), end.get_pos(), start.get_floor(), end.get_floor())
+        f_cost[start] = heuristic(start, end, start.get_floor(), end.get_floor())
         
         explored = {start}
         
@@ -426,7 +429,7 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
                 if temp_g_cost < g_cost[neighbor]:
                     come[neighbor] = current_node
                     g_cost[neighbor] = temp_g_cost
-                    f_cost[neighbor] = temp_g_cost + heuristic(neighbor.get_pos(), end.get_pos(),neighbor.get_floor(),end.get_floor())
+                    f_cost[neighbor] = temp_g_cost + heuristic(neighbor, end,neighbor.get_floor(),end.get_floor())
                     if neighbor not in explored:
                         count += 1
                         frontier.put((f_cost[neighbor], count, neighbor))

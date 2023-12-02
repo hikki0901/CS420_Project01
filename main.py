@@ -259,7 +259,7 @@ def heuristic(start, end):
     penalty = 0
     if start.text.startswith("D"):
         penalty = 1
-    return abs(x1 - x2) + abs(y1 - y2) #+ penalty * 100
+    return abs(x1 - x2) + abs(y1 - y2) + penalty * 100
 
 def astar_algorithm(draw, grid, start, end):
     count = 0
@@ -298,8 +298,8 @@ def astar_algorithm(draw, grid, start, end):
                     frontier.put((f_cost[neighbor], count, neighbor))
                     explored.add(neighbor)
                     #neighbor.set_nodeOpen_color()
-        #draw()
-        #if(current_node != start):
+        # draw()
+        # if(current_node != start):
         #    current_node.set_nodeVisited_color()
 
     return False
@@ -354,34 +354,26 @@ def astar_algorithm_with_checkpoints(draw, grid, checklist, collected_key):
                         count += 1
                         frontier.put((f_cost[neighbor], count, neighbor))
                         explored.add(neighbor)
-            #draw()
+            # draw()
 
 def recursive (draw, grid, start, end, goal_list, all_keys):
     path = astar_algorithm (draw, grid, start, end)
     for step in path:
         if step.text.startswith("D"):
-            check = False
+            if step in goal_list:
+                goal_list.remove(step)
+            goal_list.append(step)
             key = "K" + str(step.text)[1]
             for node in all_keys:
                 if node.text == key:
                     if node in goal_list:
-                        check = True
-            if check == True:
-                continue
-            else:
-                if step in goal_list:
-                    goal_list.remove(step)
-                goal_list.append(step)
+                        goal_list.remove(node)
+                    goal_list.append(node)
+                    recursive (draw, grid, start, node, goal_list, all_keys)
 
-                for node in all_keys:
-                    if node.text == key:
-                        if node in goal_list:
-                            goal_list.remove(node)
-                        goal_list.append(node)
-                        recursive (draw, grid, start, node, goal_list, all_keys)
-
+                    
 def main(window, width, height):
-    file = 'input1-level2.txt'
+    file = 'input2-level2.txt'
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid)
     goal_list = []
