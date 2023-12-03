@@ -412,7 +412,7 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
                 while end in come:   
                     path[come[end]] = end
                     end = come[end]
-                continue
+                return path
      
             for neighbor in current_node.neighbor:
                 temp_g_cost = g_cost[current_node] + 1
@@ -507,10 +507,12 @@ def main(window, width, height):
                 astar_button.draw()
                 all_keys.clear()
                 collected_key.clear()
+                agent_target.clear()
                 done =False
                 grid, start, end = make_grid_color(row, col, width, height, temp_grid,floor)
             
             if((click1)):
+                path_list = []
                 for tfloor in range(floor):
                     for i in grid[tfloor]:
                         for node in i:
@@ -532,13 +534,13 @@ def main(window, width, height):
                     tmp_goal_list.append(agent[1])
                     goal_list.append(tmp_goal_list)
                 
+                for tmp_goal_list in goal_list:
+                    astar_algorithm_with_checkpoints( row, col, width, height, grid, tmp_goal_list, collected_key,floor)
                 
-                # goal_list.reverse() 
-                # goal_list.insert(0, start)
-                # goal_list.append(end)
-                # for i in goal_list:
-                #     print (i.text, end = " ")
-                # astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor)
+                # for path in path_list:
+                #     for step in path:
+                #         print (step.get_pos(), end = " ")
+                #     print ()
                 done = True
                 end.set_start_color()
                 draw_update(window,grid,row,col,width,height,end.get_floor())
