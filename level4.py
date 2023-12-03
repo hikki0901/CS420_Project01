@@ -22,7 +22,6 @@ LIGHTPUR = (255,245,194)
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Move your step")
 font = pygame.font.Font('freesansbold.ttf', 18)
-key_image = pygame.image.load("./images/key.png")
 tile_font = pygame.font.Font('freesansbold.ttf', 10)
 fill_area_rect = pygame.Rect(0, 100, WIDTH, HEIGHT-100)
 class Button:
@@ -217,7 +216,7 @@ def read_grid_from_file():
     grid = []
     max_floor = 0
     
-    file = 'level4_input1.txt'
+    file = './input/level4/input1-level4.txt'
 
     if not exists(file):
         print("File does not exist")

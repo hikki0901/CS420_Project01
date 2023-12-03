@@ -358,7 +358,7 @@ def bfs_algorithm(draw, grid, start,end):
 
 
 def main(window, width, height):
-    file = 'input2-level1.txt'
+    file = './input/level1/input2-level1.txt'
     row, col,floor, temp_grid = read_grid_from_file(file)
     grid,start,end = make_grid_color(row,col,width,height,temp_grid)
     click1 = False
@@ -370,10 +370,10 @@ def main(window, width, height):
     run = True
     while run:
         window.fill(WHITE)
-        astar_button = Button(10, 10,"A* algo",click1)
-        ucs_button = Button(140,10, "UCS algo",click2)
-        bfs_button = Button(270, 10,"BFS algo",click3)
-        clear_button = Button(400, 10,"clear",click4)
+        astar_button = Button(15, 25,"A* algo",click1)
+        ucs_button = Button(165,25, "UCS algo",click2)
+        bfs_button = Button(315, 25,"BFS algo",click3)
+        clear_button = Button(465, 25,"Clear",click4)
         draw_update(window,grid,row,col,width,height)     
         
         if(pygame.mouse.get_pressed()[0]) and one_press:

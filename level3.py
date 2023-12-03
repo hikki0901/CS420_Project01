@@ -23,7 +23,6 @@ LIGHTPUR = (255,245,194)
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Move your step")
 font = pygame.font.Font('freesansbold.ttf', 18)
-key_image = pygame.image.load("./images/key.png")
 tile_font = pygame.font.Font('freesansbold.ttf', 10)
 fill_area_rect = pygame.Rect(0, 100, WIDTH, HEIGHT-100)
 class Button:
@@ -454,7 +453,7 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
 
 
 def main(window, width, height):
-    file = 'input1-level3.txt'
+    file = './input/level3/input1-level3.txt'
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
     goal_list = []
