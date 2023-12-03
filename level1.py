@@ -358,7 +358,7 @@ def bfs_algorithm(draw, grid, start,end):
 
 
 def main(window, width, height):
-    file = './input/level1/input2-level1.txt'
+    file = './input/level1/input4-level1.txt'
     row, col,floor, temp_grid = read_grid_from_file(file)
     grid,start,end = make_grid_color(row,col,width,height,temp_grid)
     click1 = False
