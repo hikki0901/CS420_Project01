@@ -357,6 +357,9 @@ def astar_algorithm_with_checkpoints(draw, grid, checklist, collected_key):
 
 def recursive (draw, grid, start, end, goal_list, all_keys):
     path = astar_algorithm (draw, grid, start, end)
+    if not path:
+        print ("No path")
+        return
     for step in path:
         if step.text.startswith("D"):
             if step in goal_list:
@@ -372,7 +375,7 @@ def recursive (draw, grid, start, end, goal_list, all_keys):
 
                     
 def main(window, width, height):
-    file = './input/level2/input5-level2.txt'
+    file = './input/level2/input4-level2.txt'
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid)
     goal_list = []

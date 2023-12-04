@@ -429,6 +429,9 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
 
 def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,floor):
     path = astar_algorithm(row, col, width, height, grid, start, end,floor)
+    if not path:
+        print ("No path")
+        return
     if(path):
         for step in path:
             if step.text != "DO" and step.text.startswith("D"):
