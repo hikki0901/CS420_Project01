@@ -76,7 +76,7 @@ class Node:
         self.visit_count +=1
     
     def set_heatmap_color(self):
-        intensity = min(192, int(self.visit_count * 8))
+        intensity = min(192, int(self.visit_count * 36))
         self.color = (192-intensity,250-intensity,244-intensity)
     
     def get_pos(self):
@@ -359,7 +359,7 @@ def recursive (draw, grid, start, end, goal_list, all_keys):
     path = astar_algorithm (draw, grid, start, end)
     if not path:
         print ("No path")
-        return
+        return False
     for step in path:
         if step.text.startswith("D"):
             if step in goal_list:
@@ -372,10 +372,11 @@ def recursive (draw, grid, start, end, goal_list, all_keys):
                         goal_list.remove(node)
                     goal_list.append(node)
                     recursive (draw, grid, start, node, goal_list, all_keys)
+    return True
 
                     
 def main(window, width, height):
-    file = './input/level2/input4-level2.txt'
+    file = './input/level2/input5-level2.txt'
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid)
     goal_list = []
@@ -419,15 +420,15 @@ def main(window, width, height):
                 
                 astar_button.set_click()
                 astar_button.draw()
-                recursive(lambda: draw_update(window, grid, row, col, width, height), grid, start, end, goal_list, all_keys)
+                check = recursive(lambda: draw_update(window, grid, row, col, width, height), grid, start, end, goal_list, all_keys)
+                if check: 
                 #astar_algorithm(lambda: draw_update(window, grid, row, col, width, height), grid, start, end)  
-                
-                goal_list.reverse() 
-                goal_list.insert(0, start)
-                goal_list.append(end)
-                for i in goal_list:
-                    print (i.text, end = " ")    
-                astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col, width, height), grid, goal_list, collected_key)
+                    goal_list.reverse() 
+                    goal_list.insert(0, start)
+                    goal_list.append(end)
+                    for i in goal_list:
+                        print (i.text, end = " ")    
+                    astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col, width, height), grid, goal_list, collected_key)
           
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press = True
