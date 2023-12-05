@@ -1,5 +1,6 @@
 from queue import PriorityQueue
 from queue import Queue
+import matplotlib.pyplot as plt
 import pygame
 
 pygame.init()
@@ -355,10 +356,34 @@ def bfs_algorithm(draw, grid, start,end):
             
     return False
 
+def save_heatmap_image(file_path, grid):
+    colors = [[node.color for node in row] for row in grid]
 
+    plt.imshow(colors, cmap='viridis', interpolation='nearest')
+    plt.colorbar()
+    plt.savefig(file_path)
+    plt.show()
+
+def draw_no_path_message(window,file_path):
+    font1 = pygame.font.Font('freesansbold.ttf', 54)
+    text = font1.render('Level 1', True, RED)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    font2 = pygame.font.Font('freesansbold.ttf', 42)
+    text_level = font2.render('Not Path Found', True, RED)
+    text_level_rect = text_level.get_rect(center=(WIDTH // 2, HEIGHT // 2+54))
+    window.blit(text, text_rect)
+    window.blit(text_level, text_level_rect)
+    pygame.display.update()
+    pygame.time.delay(2000)
+    
+    # Save the screen with the pop-up message
+    pygame.image.save(window, file_path)
+ 
+    
 
 def main(window, width, height):
-    file = './input/level1/input4-level1.txt'
+    file = './input/level1/input2-level1.txt'
+    file_num = file[20]
     row, col,floor, temp_grid = read_grid_from_file(file)
     grid,start,end = make_grid_color(row,col,width,height,temp_grid)
     click1 = False
@@ -398,6 +423,7 @@ def main(window, width, height):
                 clear_button.remove_click()
                 clear_button.draw()
                 
+                
             if(ucs_button.is_click()):
                 click2= True
                 click1 = click3 = click4= False
@@ -426,15 +452,33 @@ def main(window, width, height):
                 if(click1): 
                     astar_button.set_click()
                     astar_button.draw()
-                    astar_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
+                    check_path_astar=astar_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
+                    if(check_path_astar):
+                        pygame.image.save(window, "./output/level1/output"+str(file_num)+"_level1__Astar_screen.png")
+                        save_heatmap_image("./output/level1/output"+str(file_num)+"_level1_Astar_heatmap.png",grid)
+                    else:
+                        draw_no_path_message(window,"./output/level1/output"+str(file_num)+"_level1_NotFound.png")
+
                 if(click2):
                     ucs_button.set_click()
                     ucs_button.draw()
-                    ucs_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
+                    check_path_ucs=ucs_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
+                    if(check_path_ucs):
+                        pygame.image.save(window, "./output/level1/output"+str(file_num)+"_level1__ucs_screen.png")
+                        save_heatmap_image("./output/level1/output"+str(file_num)+"_level1_ucs_heatmap.png",grid)
+                    else:
+                        draw_no_path_message(window,"./output/level1/output"+str(file_num)+"_level1_NotFound.png")
+                    
                 if(click3): 
                     bfs_button.set_click()
                     bfs_button.draw()
-                    bfs_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
+                    check_path_bfs=bfs_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
+                    if(check_path_bfs):
+                        pygame.image.save(window, "./output/level1/output"+str(file_num)+"_level1__bfs_screen.png")
+                        save_heatmap_image("./output/level1/output"+str(file_num)+"_level1_bfs_heatmap.png",grid)
+                    else:
+                        draw_no_path_message(window,"./output/level1/output"+str(file_num)+"_level1_NotFound.png")
+                    
             
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press =True

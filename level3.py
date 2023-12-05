@@ -1,4 +1,5 @@
 from queue import PriorityQueue
+import matplotlib.pyplot as plt
 import pygame
 from os.path import exists
 

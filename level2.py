@@ -1,4 +1,5 @@
 from queue import PriorityQueue
+import matplotlib.pyplot as plt
 import pygame
 
 pygame.init()
@@ -174,7 +175,31 @@ class Node:
     def __lt__(self, other):
         return False
 
+# export to file png (heatmap + path)  
+def save_heatmap_image(file_path, grid):
+    colors = [[node.color for node in row] for row in grid]
+    plt.imshow(colors, cmap='viridis', interpolation='nearest')
+    plt.colorbar()
+    plt.savefig(file_path)
+    plt.show()
 
+#pop up "Not Path Found" if agent does not find path
+def draw_no_path_message(window,file_path):
+    font1 = pygame.font.Font('freesansbold.ttf', 54)
+    text = font1.render('Level 2', True, RED)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    font2 = pygame.font.Font('freesansbold.ttf', 42)
+    text_level = font2.render('Not Path Found', True, RED)
+    text_level_rect = text_level.get_rect(center=(WIDTH // 2, HEIGHT // 2+54))
+    window.blit(text, text_rect)
+    window.blit(text_level, text_level_rect)
+    pygame.display.update()
+    pygame.time.delay(2000)
+    
+    # Save the screen with the pop-up message
+    pygame.image.save(window, file_path)
+
+#read data from file
 def read_grid_from_file(file_path):
     grid = []
     with open(file_path,'r') as file:
@@ -187,7 +212,8 @@ def read_grid_from_file(file_path):
             grid.append(data)
             
     return row, coloumn, floor, grid
-    
+
+#draw each node of grid
 def make_grid_color(row, col, width, height, grid):
     grid_color = []
     start = None
@@ -376,7 +402,8 @@ def recursive (draw, grid, start, end, goal_list, all_keys):
 
                     
 def main(window, width, height):
-    file = './input/level2/input5-level2.txt'
+    file = './input/level2/input2-level2.txt'
+    file_num = file[20]
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid)
     goal_list = []
@@ -429,7 +456,10 @@ def main(window, width, height):
                     for i in goal_list:
                         print (i.text, end = " ")    
                     astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col, width, height), grid, goal_list, collected_key)
-          
+                    pygame.image.save(window, "./output/level2/output"+str(file_num)+"_level2_screen.png")
+                    save_heatmap_image("./output/level2/output"+str(file_num)+"_level2_heatmap.png",grid)
+                else:
+                    draw_no_path_message(window,"./output/level2/output"+str(file_num)+"_level2_NotFound.png")
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press = True
              
