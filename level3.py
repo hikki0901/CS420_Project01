@@ -436,11 +436,25 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
                         explored.add(neighbor)
             #draw()
 
-def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,floor):
+def set_recursive_limit (grid):
+    count = 0
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            for k in range(len(grid[0][0])):
+                if grid[i][j][k].text.startswith("D") or grid[i][j][k].text.startswith("K"):
+                    count += 1
+    return count * 2                
+
+def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,floor, count, limit):
+    if count == limit:
+        print ("No path, limit reached")
+        return False
+    
     path = astar_algorithm(row, col, width, height, grid, start, end,floor)
     if not path:
         print ("No path")
         return
+    
     if(path):
         for step in path:
             if step.text != "DO" and step.text.startswith("D"):
@@ -453,7 +467,13 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
                         if node in goal_list:
                             goal_list.remove(node)
                         goal_list.append(node)
-                        recursive (row, col, width, height, grid, start, node, goal_list, all_keys,floor)
+                        result = recursive (row, col, width, height, grid, start, node, goal_list, all_keys, floor, count +1, limit)
+
+                        if not result:
+                            return False
+    return True
+
+
 
 
 def main(window, width, height):
@@ -469,6 +489,8 @@ def main(window, width, height):
     current_floor = start.get_floor()
     run = True
     done = False
+    count = 0
+
     while run:
         window.fill(WHITE)
         
@@ -501,6 +523,7 @@ def main(window, width, height):
                 all_keys.clear()
                 collected_key.clear()
                 done =False
+                count = 0
                 grid, start, end = make_grid_color(row, col, width, height, temp_grid,floor)
             
             if((click1)):
@@ -510,20 +533,22 @@ def main(window, width, height):
                             node.neighbors(grid, collected_key, False)
                             if node.text.startswith("K"):
                                 all_keys.append(node)
+
+                recursive_limit = set_recursive_limit(grid)
                 
                 astar_button.set_click()
                 astar_button.draw()
-                recursive(row, col, width, height, grid, start, end, goal_list, all_keys,floor)
-                
-                goal_list.reverse() 
-                goal_list.insert(0, start)
-                goal_list.append(end)
-                for i in goal_list:
-                    print (i.text, end = " ")
-                astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor)
-                done = True
-                end.set_start_color()
-                draw_update(window,grid,row,col,width,height,end.get_floor())
+                check = recursive(row, col, width, height, grid, start, end, goal_list, all_keys,floor,count, recursive_limit)
+                if check: 
+                    goal_list.reverse() 
+                    goal_list.insert(0, start)
+                    goal_list.append(end)
+                    for i in goal_list:
+                        print (i.text, end = " ")
+                    astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor)
+                    done = True
+                    end.set_start_color()
+                    draw_update(window,grid,row,col,width,height,end.get_floor())
           
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press = True

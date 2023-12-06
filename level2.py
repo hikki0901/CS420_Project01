@@ -391,7 +391,7 @@ def set_recursive_limit (grid):
 
 def recursive (draw, grid, start, end, goal_list, all_keys, count, limit):
     if count == limit:
-        print ("No path")
+        print ("No path, limit reached")
         return False
     
     path = astar_algorithm (draw, grid, start, end)
@@ -399,6 +399,7 @@ def recursive (draw, grid, start, end, goal_list, all_keys, count, limit):
     if not path:
         print ("No path")
         return False
+    
     for step in path:
         if step.text.startswith("D"):
             if step in goal_list:
