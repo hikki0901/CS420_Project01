@@ -437,7 +437,7 @@ def astar_algorithm(row, col, width, height, grid, start, end, floor):
 
     return False
 
-def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, collected_key,floor):
+def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, collected_key,floor, final_path):
     collected_key.clear()
     for i in range(len(checklist) - 1):
         start = checklist[i]
@@ -470,9 +470,14 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
             if current_node == end:
                 draw_solution(come, end,row, col, width, height, start,grid,start.get_floor())
                 path = {}
+                tmp = []
                 while end in come:   
                     path[come[end]] = end
                     end = come[end]
+                for i in path:
+                    tmp.append(i)
+                tmp.reverse()
+                final_path.extend(tmp)
                 continue
      
             for neighbor in current_node.neighbor:
@@ -535,6 +540,7 @@ def main(window, width, height):
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
     goal_list = []
     all_keys = []
+    final_path = []
     click1 = False
     click4 = False
     one_press = True
@@ -598,7 +604,14 @@ def main(window, width, height):
                     goal_list.append(end)
                     for i in goal_list:
                         print (i.text, end = " ")
-                    astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor)
+                    astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor, final_path)
+                    for i in range(len(final_path) - 1, 0, -1):
+                        if final_path[i] == final_path[i - 1]:
+                            del final_path[i]
+                    for i in final_path:
+                        x, y = i.get_pos()
+                        z = i.get_floor()
+                        print((x, y, z), end=" ")
                     done = True
                     end.set_start_color()
                     draw_update(window,grid,row,col,width,height,end.get_floor())
