@@ -329,7 +329,7 @@ def astar_algorithm(draw, grid, start, end):
 
     return False
 
-def astar_algorithm_with_checkpoints(draw, grid, checklist, collected_key):
+def astar_algorithm_with_checkpoints(draw, grid, checklist, collected_key, final_path):
     collected_key.clear()
     for i in range(len(checklist) - 1):
         start = checklist[i]
@@ -362,9 +362,14 @@ def astar_algorithm_with_checkpoints(draw, grid, checklist, collected_key):
             if current_node == end:
                 draw_solution(come, end, draw, start)
                 path = {}
+                tmp = []
                 while end in come:   
                     path[come[end]] = end
                     end = come[end]
+                for i in path:
+                    tmp.append(i)
+                tmp.reverse()
+                final_path.extend(tmp)
                 continue
      
             for neighbor in current_node.neighbor:
@@ -427,6 +432,7 @@ def main(window, width, height):
     grid, start, end = make_grid_color(row,col,width,height,temp_grid)
     goal_list = []
     all_keys = []
+    final_path = []
     click1 = False
     click4 = False
     one_press = True
@@ -476,9 +482,17 @@ def main(window, width, height):
                     goal_list.reverse() 
                     goal_list.insert(0, start)
                     goal_list.append(end)
-                    for i in goal_list:
-                        print (i.text, end = " ")    
-                    astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col, width, height), grid, goal_list, collected_key)
+                    #for i in final_path:
+                    #    x, y = i.get_pos()
+                    #    print(i, end=" ")
+                        #print (i.text, end = " ")    
+                    astar_algorithm_with_checkpoints(lambda: draw_update(window, grid, row, col, width, height), grid, goal_list, collected_key, final_path)
+                    for i in range(len(final_path) - 1, 0, -1):
+                        if final_path[i] == final_path[i - 1]:
+                            del final_path[i]
+                    for i in final_path:
+                        x, y = i.get_pos()
+                        print((x, y), end=" ")
                     pygame.image.save(window, "./output/level2/output"+str(file_num)+"_level2_screen.png")
                     save_heatmap_image("./output/level2/output"+str(file_num)+"_level2_heatmap.png",grid)
                 else:
