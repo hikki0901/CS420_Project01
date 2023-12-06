@@ -376,7 +376,7 @@ def astar_algorithm(row, col, width, height, grid, start, end, floor):
 
     return False
 
-def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, collected_key,floor):
+def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, collected_key,floor,final_path):
     collected_key.clear()
     for i in range(len(checklist) - 1):
         start = checklist[i]
@@ -409,9 +409,14 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
             if current_node == end:
                 draw_solution(come, end,row, col, width, height, start,grid,start.get_floor())
                 path = {}
+                tmp = []
                 while end in come:   
                     path[come[end]] = end
                     end = come[end]
+                for i in path:
+                    tmp.append(i)
+                tmp.reverse()
+                final_path.extend(tmp)
                 return path
      
             for neighbor in current_node.neighbor:
@@ -538,7 +543,9 @@ def main(window, width, height):
                     goal_list.append(tmp_goal_list)
                 
                 for tmp_goal_list in goal_list:
-                    astar_algorithm_with_checkpoints( row, col, width, height, grid, tmp_goal_list, collected_key,floor)
+                    final_path = []
+                    astar_algorithm_with_checkpoints( row, col, width, height, grid, tmp_goal_list, collected_key,floor, final_path)
+                    path_list.append(final_path)
                 
                 # for path in path_list:
                 #     for step in path:
