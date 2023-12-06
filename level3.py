@@ -20,12 +20,16 @@ IRISBLUE = (0, 181, 204)
 PINK = (255, 105, 180)
 LIGHTGREEN = (208,242,136)
 LIGHTPUR = (255,245,194)
+ERROR_TEXT = (161,3,76)
+ERROR_AREA_COLOR = (120, 124, 198)
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Move your step")
 font = pygame.font.Font('freesansbold.ttf', 18)
 tile_font = pygame.font.Font('freesansbold.ttf', 10)
 fill_area_rect = pygame.Rect(0, 100, WIDTH, HEIGHT-100)
+Error_area = pygame.Rect(WIDTH // 4-50, HEIGHT//2 -35, 400, 120)
+
 class Button:
     def __init__(self, x, y, text, click):
         self.x = x
@@ -258,6 +262,41 @@ def read_grid_from_file(file):
                 
     return row, column, max_floor, grid
 
+# export to file png (heatmap)  
+def save_heatmap_image(file_path, grid, floor):
+    colors = [[[node.color for node in row] for row in grid[i]] for i in range(floor)]
+    plt.imshow(colors, cmap='viridis', interpolation='nearest')
+    plt.colorbar()
+    plt.savefig(file_path)
+    plt.show()
+
+#export screen image 
+def export_screen(grid,row,col,width,height,floor,file_num):
+    for i in range(floor):
+        capture_surface = pygame.Surface((WIDTH, HEIGHT))
+        capture_surface.fill(WHITE)
+        pygame.draw.rect(capture_surface, WHITE, fill_area_rect)
+        draw_update(capture_surface,grid,row,col,width,height,i)
+        pygame.image.save(capture_surface, "./output/level3/output"+str(file_num)+"_level3_floor"+str(i+1)+".png")
+
+#pop up "Not Path Found" if agent does not find path
+def draw_no_path_message(window,file_path):
+    pygame.draw.rect(window,RED, Error_area,0,50)
+    font1 = pygame.font.Font('freesansbold.ttf', 54)
+    text = font1.render('Level 3', True, YELLOW)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    font2 = pygame.font.Font('freesansbold.ttf', 42)
+    text_level = font2.render('Not Path Found', True, YELLOW)
+    text_level_rect = text_level.get_rect(center=(WIDTH // 2, HEIGHT // 2+54))
+    window.blit(text, text_rect)
+    window.blit(text_level, text_level_rect)
+    
+    pygame.display.update()
+    pygame.time.delay(2000)
+    
+    # Save the screen with the pop-up message
+    pygame.image.save(window, file_path)
+
 def make_grid_color(row, col, width, height, grid,floor):
     grid_color = []
     start = None
@@ -307,6 +346,18 @@ def draw_grid_line(window, rows, cols, width, height):
     
     pygame.draw.line(window, GREY, (cols * gap2, 100), (cols * gap2, height+100))
 
+def update_floor_text(window,floor):
+    font_size =54
+    font_top = pygame.font.Font('freesansbold.ttf', font_size)
+    text_surface = font_top.render("Floor"+str(floor+1), True, PINK)
+    text_rect = text_surface.get_rect()
+    text_rect.centerx = WIDTH // 2
+    text_rect.y = 20 
+    window.fill(WHITE, text_rect)
+    # Blit the text surface onto the screen
+    window.blit(text_surface, text_rect)
+    pygame.display.flip()
+
 def draw_update(window, grid, rows, cols, width, height,cur_floor): 
     for i in grid[cur_floor]:
         for node in i:
@@ -315,9 +366,9 @@ def draw_update(window, grid, rows, cols, width, height,cur_floor):
             if(node.text == "UP"):
                 node.set_UP()
             node.draw(window,cur_floor)
-            
     draw_grid_line(window, rows, cols, width, height)
-    pygame.display.update()
+    update_floor_text(window,cur_floor)
+    
 
 def draw_solution(come, current,row, col, width, height, start, grid,floor):
     path = {}
@@ -335,6 +386,7 @@ def draw_solution(come, current,row, col, width, height, start, grid,floor):
         start = path[start]
         start.set_path_color()
         draw_update(window,grid,row, col, width, height,start.get_floor())
+        
 
 def heuristic(start, end, start_floor, end_floor):
     x1, y1 = start.get_pos()
@@ -478,6 +530,7 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
 
 def main(window, width, height):
     file = './input/level3/input1-level3.txt'
+    file_num = file[20]
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
     goal_list = []
@@ -494,8 +547,8 @@ def main(window, width, height):
     while run:
         window.fill(WHITE)
         
-        astar_button = Button(10, 10, "Go", click1)
-        clear_button = Button(400, 10, "Clear", click4)
+        astar_button = Button(10, 20, "Go", click1)
+        clear_button = Button(450, 20, "Clear", click4)
         if(done == False):
             draw_update(window,grid,row,col,width,height,current_floor)
         else:
@@ -549,7 +602,9 @@ def main(window, width, height):
                     done = True
                     end.set_start_color()
                     draw_update(window,grid,row,col,width,height,end.get_floor())
-          
+                    export_screen(grid,row,col,width,height,floor,file_num)
+                else:
+                    draw_no_path_message(window,"./output/level3/output"+str(file_num)+"_level3_NotFound.png")
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press = True
              

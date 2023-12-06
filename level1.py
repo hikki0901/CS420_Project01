@@ -22,6 +22,7 @@ IRISBLUE = (0,181,204)
 window = pygame.display.set_mode((WIDTH,HEIGHT))
 pygame.display.set_caption("Move your step")
 font = pygame.font.Font('freesansbold.ttf',18)
+Error_area = pygame.Rect(WIDTH // 4-50, HEIGHT//2 -35, 400, 120)
 
 # draw button to click algorithm
 class Button:
@@ -365,14 +366,16 @@ def save_heatmap_image(file_path, grid):
     plt.show()
 
 def draw_no_path_message(window,file_path):
+    pygame.draw.rect(window,RED, Error_area,0,50)
     font1 = pygame.font.Font('freesansbold.ttf', 54)
-    text = font1.render('Level 1', True, RED)
+    text = font1.render('Level 1', True, YELLOW)
     text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
     font2 = pygame.font.Font('freesansbold.ttf', 42)
-    text_level = font2.render('Not Path Found', True, RED)
+    text_level = font2.render('Not Path Found', True, YELLOW)
     text_level_rect = text_level.get_rect(center=(WIDTH // 2, HEIGHT // 2+54))
     window.blit(text, text_rect)
     window.blit(text_level, text_level_rect)
+    
     pygame.display.update()
     pygame.time.delay(2000)
     
@@ -382,7 +385,7 @@ def draw_no_path_message(window,file_path):
     
 
 def main(window, width, height):
-    file = './input/level1/input2-level1.txt'
+    file = './input/level1/input1-level1.txt'
     file_num = file[20]
     row, col,floor, temp_grid = read_grid_from_file(file)
     grid,start,end = make_grid_color(row,col,width,height,temp_grid)
@@ -465,7 +468,6 @@ def main(window, width, height):
                     check_path_ucs=ucs_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
                     if(check_path_ucs):
                         pygame.image.save(window, "./output/level1/output"+str(file_num)+"_level1__ucs_screen.png")
-                        save_heatmap_image("./output/level1/output"+str(file_num)+"_level1_ucs_heatmap.png",grid)
                     else:
                         draw_no_path_message(window,"./output/level1/output"+str(file_num)+"_level1_NotFound.png")
                     
@@ -475,7 +477,6 @@ def main(window, width, height):
                     check_path_bfs=bfs_algorithm(lambda: draw_update(window, grid, row, col,width,height), grid, start, end)
                     if(check_path_bfs):
                         pygame.image.save(window, "./output/level1/output"+str(file_num)+"_level1__bfs_screen.png")
-                        save_heatmap_image("./output/level1/output"+str(file_num)+"_level1_bfs_heatmap.png",grid)
                     else:
                         draw_no_path_message(window,"./output/level1/output"+str(file_num)+"_level1_NotFound.png")
                     
