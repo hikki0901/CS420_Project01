@@ -22,6 +22,7 @@ window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Move your step")
 font = pygame.font.Font('freesansbold.ttf', 18)
 tile_font = pygame.font.Font('freesansbold.ttf', 10)
+Error_area = pygame.Rect(WIDTH // 4-50, HEIGHT//2 -35, 400, 120)
 
 class Button:
     def __init__(self, x, y, text, click):
@@ -185,14 +186,16 @@ def save_heatmap_image(file_path, grid):
 
 #pop up "Not Path Found" if agent does not find path
 def draw_no_path_message(window,file_path):
+    pygame.draw.rect(window,RED, Error_area,0,50)
     font1 = pygame.font.Font('freesansbold.ttf', 54)
-    text = font1.render('Level 2', True, RED)
+    text = font1.render('Level 2', True, YELLOW)
     text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
     font2 = pygame.font.Font('freesansbold.ttf', 42)
-    text_level = font2.render('Not Path Found', True, RED)
+    text_level = font2.render('Not Path Found', True, YELLOW)
     text_level_rect = text_level.get_rect(center=(WIDTH // 2, HEIGHT // 2+54))
     window.blit(text, text_rect)
     window.blit(text_level, text_level_rect)
+    
     pygame.display.update()
     pygame.time.delay(2000)
     
@@ -494,7 +497,6 @@ def main(window, width, height):
                         x, y = i.get_pos()
                         print((x, y), end=" ")
                     pygame.image.save(window, "./output/level2/output"+str(file_num)+"_level2_screen.png")
-                    save_heatmap_image("./output/level2/output"+str(file_num)+"_level2_heatmap.png",grid)
                 else:
                     draw_no_path_message(window,"./output/level2/output"+str(file_num)+"_level2_NotFound.png")
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
