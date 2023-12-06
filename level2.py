@@ -381,8 +381,21 @@ def astar_algorithm_with_checkpoints(draw, grid, checklist, collected_key):
                         explored.add(neighbor)
             # draw()
 
-def recursive (draw, grid, start, end, goal_list, all_keys):
+def set_recursive_limit (grid):
+    count = 0
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if grid[i][j].text.startswith("D") or grid[i][j].text.startswith("K"):
+                count += 1
+    return count * 2                
+
+def recursive (draw, grid, start, end, goal_list, all_keys, count, limit):
+    if count == limit:
+        print ("No path")
+        return False
+    
     path = astar_algorithm (draw, grid, start, end)
+
     if not path:
         print ("No path")
         return False
@@ -397,12 +410,17 @@ def recursive (draw, grid, start, end, goal_list, all_keys):
                     if node in goal_list:
                         goal_list.remove(node)
                     goal_list.append(node)
-                    recursive (draw, grid, start, node, goal_list, all_keys)
+                    result = recursive (draw, grid, start, node, goal_list, all_keys, count + 1, limit)
+                    
+                    if not result:
+                        return False
     return True
+
+
 
                     
 def main(window, width, height):
-    file = './input/level2/input2-level2.txt'
+    file = './input/level2/input1-level2.txt'
     file_num = file[20]
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid)
@@ -412,6 +430,7 @@ def main(window, width, height):
     click4 = False
     one_press = True
     collected_key = set()
+    count = 0
 
     run = True
     while run:
@@ -436,6 +455,7 @@ def main(window, width, height):
                 astar_button.draw()
                 all_keys.clear()
                 collected_key.clear()
+                count = 0
                 grid, start, end = make_grid_color(row, col, width, height, temp_grid)
             
             if((click1)):
@@ -445,9 +465,11 @@ def main(window, width, height):
                         if node.text.startswith("K"):
                             all_keys.append(node)
                 
+                recursive_limit = set_recursive_limit(grid)
+
                 astar_button.set_click()
                 astar_button.draw()
-                check = recursive(lambda: draw_update(window, grid, row, col, width, height), grid, start, end, goal_list, all_keys)
+                check = recursive(lambda: draw_update(window, grid, row, col, width, height), grid, start, end, goal_list, all_keys, count, recursive_limit)
                 if check: 
                 #astar_algorithm(lambda: draw_update(window, grid, row, col, width, height), grid, start, end)  
                     goal_list.reverse() 
