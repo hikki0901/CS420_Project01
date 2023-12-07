@@ -292,7 +292,9 @@ def make_grid_color(row, col, width, height, grid,floor):
                 node = Node(i, j, width // col, height // row, row, col,k)
 
                 if(grid[k][i][j].startswith("A")):
-                    node.set_start_color()
+                    if (grid[k][i][j].startswith("A1")):
+                        node.set_start_color()
+                    else: node.set_path_color_aux()
                     node.text = str(grid[k][i][j])
                     if (grid[k][i][j].startswith("A1")):
                         start = node
