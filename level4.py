@@ -19,11 +19,16 @@ IRISBLUE = (0, 181, 204)
 PINK = (255, 105, 180)
 LIGHTGREEN = (208,242,136)
 LIGHTPUR = (255,245,194)
-ORANGE = (255, 165, 0)
-PURPLE = (128, 0, 128)
-TEAL = (0, 128, 128)
-CYAN = (0, 255, 255)
-MAGENTA = (255, 0, 255)
+
+C0 = (255, 181, 181)
+C1 = (255, 181, 216)
+C2 = (255, 181, 251)
+C3 = (201, 181, 255)
+C4 = (181, 255, 253)
+C5 = (246, 255, 181)
+C6 = (255, 238, 181)
+C7 = (255, 206, 181)
+C8 = (255, 196, 181)
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Move your step")
@@ -85,8 +90,9 @@ class Node:
         self.visit_count +=1
 
     def set_heatmap_color(self):
-        intensity = min(192, int(self.visit_count * 36))
-        self.color = (192-intensity,250-intensity,244-intensity)
+        x, y, z = self.color
+        intensity = min(x, y, z, int(self.visit_count * 36))
+        self.color = (x - intensity, y - intensity, z - intensity)
     
     def get_floor(self):
         return self.floor
@@ -122,9 +128,17 @@ class Node:
     def set_path_color(self):
         self.color = RED
     
-    def set_unvisible(self):
-        self.color =IRISBLUE
-
+    def set_unvisible(self, i):
+        if i == 0: self.color = C0
+        if i == 1: self.color = C1
+        if i == 2: self.color = C2
+        if i == 3: self.color = C3
+        if i == 4: self.color = C4
+        if i == 5: self.color = C5
+        if i == 6: self.color = C6
+        if i == 7: self.color = C7
+        if i == 8: self.color = C8
+        
     def set_key(self):
         self.color = PINK
 
@@ -591,19 +605,28 @@ def main(window, width, height):
                 #     print (len(path))
                 
                 draw_path = []
+                path_num = []
                 for i in range(len(path_list[0]) - 1):
+                    j = 0
                     for path in path_list:
                         draw_path.append(path[i])
+                        path_num.append(j)
+                        j += 1
                 
+                for i in path_num:
+                    print(i, '\n')
+                
+                i = 0
                 for coord in draw_path:
                     pygame.draw.rect(window, WHITE, fill_area_rect)
-                    draw_update(window,grid,row, col, width, height,coord.get_floor())
-                    pygame.time.delay(1)
-                    coord.set_unvisible()
+                    draw_update(window, grid, row, col, width, height, coord.get_floor())
+                    pygame.time.delay(1000)
+                    coord.set_unvisible(path_num[i])
                     coord.increment_visit_count()
                     coord.set_heatmap_color()
-                    draw_update(window,grid,row, col, width, height,coord.get_floor())
-                
+                    draw_path[i + 1].set_path_color()
+                    i += 1
+                    draw_update(window, grid, row, col, width, height, coord.get_floor())
 
                 done = True
                 end.set_start_color()
