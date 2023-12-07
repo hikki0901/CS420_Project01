@@ -127,6 +127,9 @@ class Node:
         
     def set_path_color(self):
         self.color = RED
+
+    def set_path_color_aux(self):
+        self.color = GREEN
     
     def set_unvisible(self, i):
         if i == 0: self.color = C0
@@ -622,7 +625,8 @@ def main(window, width, height):
                         path[i].set_unvisible(j)
                         path[i].increment_visit_count()
                         path[i].set_heatmap_color()
-                        path[i + 1].set_path_color()
+                        if j == 0: path[i + 1].set_path_color()
+                        else: path[i + 1].set_path_color_aux()
                         j += 1
                         draw_update(window, grid, row, col, width, height, path[i].get_floor())
                 
