@@ -606,7 +606,7 @@ def get_all_path (agent_list, path_list, grid, collected_key):
     for i in range(1, len(path_list[0]) - 1):
         j = 0
         for path in path_list:
-            main_path[j].neighbors(grid, collected_key, False)
+            main_path[i].neighbors(grid, collected_key, False)
             if j != 0:
                 agent_current_pos[j - 1].neighbors_check_agent(grid, collected_key, False, agent_current_pos)
                 tmp_neighbor = random.choice(agent_current_pos[j - 1].neighbor)
