@@ -19,6 +19,11 @@ IRISBLUE = (0, 181, 204)
 PINK = (255, 105, 180)
 LIGHTGREEN = (208,242,136)
 LIGHTPUR = (255,245,194)
+ORANGE = (255, 165, 0)
+PURPLE = (128, 0, 128)
+TEAL = (0, 128, 128)
+CYAN = (0, 255, 255)
+MAGENTA = (255, 0, 255)
 
 window = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Move your step")
@@ -577,7 +582,19 @@ def main(window, width, height):
                 # for path in path_list:
                 #     print (len(path))
                 
+                draw_path = []
+                for i in range(len(path_list[0]) - 1):
+                    for path in path_list:
+                        draw_path.append(path[i])
                 
+                for coord in draw_path:
+                    pygame.draw.rect(window, WHITE, fill_area_rect)
+                    draw_update(window,grid,row, col, width, height,coord.get_floor())
+                    pygame.time.delay(100)
+                    coord.set_unvisible()
+                    draw_update(window,grid,row, col, width, height,coord.get_floor())
+                
+
                 done = True
                 end.set_start_color()
                 draw_update(window,grid,row,col,width,height,end.get_floor())
