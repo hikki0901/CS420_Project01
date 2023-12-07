@@ -611,7 +611,7 @@ def get_all_path (agent_list, path_list, grid, collected_key):
                 agent_current_pos[j - 1].neighbors_check_agent(grid, collected_key, False, agent_current_pos)
                 tmp_neighbor = random.choice(agent_current_pos[j - 1].neighbor)
                 if tmp_neighbor in main_path[i].neighbor or tmp_neighbor == main_path[i] or tmp_neighbor is None:
-                    path.append(path[i-1])
+                    path.append(path[i - 1])
                 else:
                     path.append(tmp_neighbor)
                     agent_current_pos[j - 1] = tmp_neighbor
@@ -716,12 +716,14 @@ def main(window, width, height):
                     for path in path_list:
                         pygame.draw.rect(window, WHITE, fill_area_rect)
                         draw_update(window, grid, row, col, width, height, path[i].get_floor())
-                        pygame.time.delay(1000)
+                        pygame.time.delay(1)
                         path[i].set_unvisible(j)
                         path[i].increment_visit_count()
                         path[i].set_heatmap_color()
                         if j == 0: path[i + 1].set_path_color()
-                        else: path[i + 1].set_path_color_aux()
+                        else:
+                            if i < len(path_list[0]) - 2:
+                                path[i + 1].set_path_color_aux()
                         j += 1
                         draw_update(window, grid, row, col, width, height, path[i].get_floor())
                 
