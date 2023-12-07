@@ -79,6 +79,14 @@ class Node:
         self.text = ""
         self.floor = floor
         self.is_door = False
+        self.visit_count = 0
+    
+    def increment_visit_count(self):
+        self.visit_count +=1
+
+    def set_heatmap_color(self):
+        intensity = min(192, int(self.visit_count * 36))
+        self.color = (192-intensity,250-intensity,244-intensity)
     
     def get_floor(self):
         return self.floor
@@ -590,8 +598,10 @@ def main(window, width, height):
                 for coord in draw_path:
                     pygame.draw.rect(window, WHITE, fill_area_rect)
                     draw_update(window,grid,row, col, width, height,coord.get_floor())
-                    pygame.time.delay(100)
+                    pygame.time.delay(1)
                     coord.set_unvisible()
+                    coord.increment_visit_count()
+                    coord.set_heatmap_color()
                     draw_update(window,grid,row, col, width, height,coord.get_floor())
                 
 
