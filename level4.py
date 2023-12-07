@@ -1,6 +1,7 @@
 from queue import PriorityQueue
 import pygame
 from os.path import exists
+import random
 
 pygame.init()
 
@@ -407,7 +408,7 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
             current_node.neighbors(grid, collected_key, True)
                 
             if current_node == end:
-                draw_solution(come, end,row, col, width, height, start,grid,start.get_floor())
+                # draw_solution(come, end,row, col, width, height, start,grid,start.get_floor())
                 path = {}
                 tmp = []
                 while end in come:   
@@ -417,7 +418,7 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
                     tmp.append(i)
                 tmp.reverse()
                 final_path.extend(tmp)
-                return path
+                continue
      
             for neighbor in current_node.neighbor:
                 temp_g_cost = g_cost[current_node] + 1
@@ -451,24 +452,50 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
                         goal_list.append(node)
                         recursive (row, col, width, height, grid, start, node, goal_list, all_keys,floor)
 
-def define_agent_target(grid):
+def define_agent(grid):
     agent_list = []
-    target_list = []
     for k in range(len(grid)):
         for i in range(len(grid[0])):
             for j in range(len(grid[0][0])):
-                if grid[k][i][j].text.startswith("A"):
+                if grid[k][i][j].text.startswith("A1"):
+                    agent_list.insert(0,grid[k][i][j])
+                elif grid[k][i][j].text.startswith("A"):
                     agent_list.append(grid[k][i][j])
 
-    for agent in agent_list:
-        for k in range(len(grid)):
+    return agent_list
+
+def define_target(agent, grid):
+    for k in range(len(grid)):
             for i in range(len(grid[0])):
                 for j in range(len(grid[0][0])):
                     if grid[k][i][j].text.startswith("T"):
                         if grid[k][i][j].text[1] == agent.text[1]:
-                            target_list.append(grid[k][i][j])
+                            target = (grid[k][i][j])
+                            return target
     
-    return agent_list,target_list
+
+
+def get_all_path (agent_list, path_list, grid, collected_key):
+    main_path = list(path_list[0])
+    for agent in agent_list:
+        if not agent.text.startswith("A1"):
+            tmp_path = []
+            tmp_path.append(agent)
+            for i in range(1, len(main_path)):
+                main_path[i].neighbors(grid, collected_key, False)
+                tmp_path[i-1].neighbors(grid, collected_key, False)
+                tmp_neighbor = random.choice(tmp_path[i-1].neighbor)
+                if tmp_neighbor in main_path[i].neighbor or tmp_neighbor == main_path[i]:
+                    tmp_path.append(tmp_path[i-1])
+                else:
+                    tmp_path.append(tmp_neighbor)
+
+            path_list.append(tmp_path)
+            
+                
+
+            
+
 
 
 def main(window, width, height):
@@ -528,29 +555,29 @@ def main(window, width, height):
                             if node.text.startswith("K"):
                                 all_keys.append(node)
                 
-                agent_list, target_list = define_agent_target(grid)
-                agent_target = list(zip(agent_list,target_list))
+                agent_list = define_agent(grid)
                 
                 astar_button.set_click()
                 astar_button.draw()
 
-                for agent in agent_target:
-                    tmp_goal_list = []
-                    recursive(row, col, width, height, grid, agent[0], agent[1], tmp_goal_list, all_keys, floor)
-                    tmp_goal_list.reverse() 
-                    tmp_goal_list.insert(0, agent[0])
-                    tmp_goal_list.append(agent[1])
-                    goal_list.append(tmp_goal_list)
+                for agent in agent_list:
+                    if agent.text.startswith("A1"):
+                        target = define_target(agent,grid)
+                        recursive(row, col, width, height, grid, agent, target, goal_list, all_keys, floor)
+                        goal_list.reverse() 
+                        goal_list.insert(0, agent)
+                        goal_list.append(target)
+                        break
                 
-                for tmp_goal_list in goal_list:
-                    final_path = []
-                    astar_algorithm_with_checkpoints( row, col, width, height, grid, tmp_goal_list, collected_key,floor, final_path)
-                    path_list.append(final_path)
-                
+                path = []
+                astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor, path)
+                path_list.append(path)
+
+                get_all_path(agent_list, path_list,grid,collected_key)
                 # for path in path_list:
-                #     for step in path:
-                #         print (step.get_pos(), end = " ")
-                #     print ()
+                #     print (len(path))
+                
+                
                 done = True
                 end.set_start_color()
                 draw_update(window,grid,row,col,width,height,end.get_floor())
