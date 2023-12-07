@@ -612,10 +612,23 @@ def main(window, width, height):
                         draw_path.append(path[i])
                         path_num.append(j)
                         j += 1
+
+                for i in range(len(path_list[0]) - 1):
+                    j = 0
+                    for path in path_list:
+                        pygame.draw.rect(window, WHITE, fill_area_rect)
+                        draw_update(window, grid, row, col, width, height, path[i].get_floor())
+                        pygame.time.delay(1000)
+                        path[i].set_unvisible(j)
+                        path[i].increment_visit_count()
+                        path[i].set_heatmap_color()
+                        path[i + 1].set_path_color()
+                        j += 1
+                        draw_update(window, grid, row, col, width, height, path[i].get_floor())
                 
                 for i in path_num:
                     print(i, '\n')
-                
+                '''
                 i = 0
                 for coord in draw_path:
                     pygame.draw.rect(window, WHITE, fill_area_rect)
@@ -624,10 +637,10 @@ def main(window, width, height):
                     coord.set_unvisible(path_num[i])
                     coord.increment_visit_count()
                     coord.set_heatmap_color()
-                    draw_path[i + 1].set_path_color()
                     i += 1
+                    draw_path[i].set_path_color()
                     draw_update(window, grid, row, col, width, height, coord.get_floor())
-
+                '''
                 done = True
                 end.set_start_color()
                 draw_update(window,grid,row,col,width,height,end.get_floor())
