@@ -239,6 +239,75 @@ class Node:
                     else:
                         self.neighbor.append(grid[cur_floor][new_x][new_y])
 
+    def neighbors_check_agent(self, grid, collected_key, check_door, agent_current_pos):
+        cur_floor = self.floor
+        self.neighbor = []
+        direct = [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)]
+
+        for dir in direct:
+            new_x = self.x + dir[0]
+            new_y = self.y + dir[1]
+            check = True
+            
+            if (0 <= new_x < self.total_row and 0 <= new_y < self.total_col):
+                if abs(dir[0]) == abs(dir[1]):
+                    if grid[cur_floor][self.x][new_y].is_barrier() or grid[cur_floor][new_x][self.y].is_barrier() or grid[cur_floor][new_x][new_y].is_barrier():
+                        check = False                   
+                    
+                    if check_door ==True:
+                        if grid[cur_floor][new_x][self.y].is_door:
+                            key = "K" + str(grid[cur_floor][new_x][self.y].text[1:])
+                            if key not in collected_key:
+                                check = False
+
+                        if grid[cur_floor][self.x][new_y].is_door:
+                            key = "K" + str(grid[cur_floor][self.x][new_y].text[1:])
+                            if key not in collected_key:
+                                check = False
+                        
+                        if grid[cur_floor][new_x][new_y].is_door:
+                            key = "K" + str(grid[cur_floor][new_x][new_y].text[1:])
+                            if key not in collected_key:
+                                check = False
+                    
+                    if grid[cur_floor][new_x][self.y] in agent_current_pos:
+                        check = False
+
+                    if grid[cur_floor][self.x][new_y] in agent_current_pos:
+                        check = False
+                        
+                    if grid[cur_floor][new_x][new_y] in agent_current_pos:
+                        check = False
+
+                else:
+                    if grid[cur_floor][new_x][new_y].is_barrier():
+                        check = False
+                    
+                    if grid[cur_floor][new_x][new_y] in agent_current_pos:
+                        check = False
+                    
+                    if check_door == True:
+                        if grid[cur_floor][new_x][new_y].is_door:
+                            key = "K" + str(grid[cur_floor][new_x][new_y].text[1])
+                            if key not in collected_key:
+                                check = False
+
+            else: check = False
+
+            if check == True:
+                if grid[cur_floor][new_x][new_y] not in self.neighbor:
+                    #self.neighbor.append(grid[cur_floor][new_x][new_y])
+                    if(grid[cur_floor][new_x][new_y].is_UP()):
+                        temp_node = self.searchUP(grid,cur_floor)
+                        if temp_node not in self.neighbor:
+                            self.neighbor.append(temp_node)
+                    elif grid[cur_floor][new_x][new_y].is_DO():
+                        temp_node = self.searchDO(grid,cur_floor)
+                        if temp_node not in self.neighbor:
+                            self.neighbor.append(temp_node)
+                    else:
+                        self.neighbor.append(grid[cur_floor][new_x][new_y])
+
     def __lt__(self, other):
         return False
 
@@ -509,6 +578,16 @@ def define_target(agent, grid):
 
 def get_all_path (agent_list, path_list, grid, collected_key):
     main_path = list(path_list[0])
+
+    agent_current_pos = []
+    for agent in agent_list:
+        if not agent.text.startswith("A1"):
+            tmp_path = []
+            tmp_path.append(agent)
+            agent_current_pos.append(agent)
+            path_list.append(tmp_path)
+
+    '''
     for agent in agent_list:
         if not agent.text.startswith("A1"):
             tmp_path = []
@@ -523,12 +602,22 @@ def get_all_path (agent_list, path_list, grid, collected_key):
                     tmp_path.append(tmp_neighbor)
 
             path_list.append(tmp_path)
+    '''
+    for i in range(1, len(path_list[0]) - 1):
+        j = 0
+        for path in path_list:
+            main_path[j].neighbors(grid, collected_key, False)
+            if j != 0:
+                agent_current_pos[j - 1].neighbors_check_agent(grid, collected_key, False, agent_current_pos)
+                tmp_neighbor = random.choice(agent_current_pos[j - 1].neighbor)
+                if tmp_neighbor in main_path[i].neighbor or tmp_neighbor == main_path[i] or tmp_neighbor is None:
+                    path.append(path[i-1])
+                else:
+                    path.append(tmp_neighbor)
+                    agent_current_pos[j - 1] = tmp_neighbor
+            j += 1
+    
             
-                
-
-            
-
-
 
 def main(window, width, height):
     agent_target = []
@@ -618,6 +707,10 @@ def main(window, width, height):
                         path_num.append(j)
                         j += 1
 
+                #for i in path_num:
+                #    print(i, '\n')
+                print(len(path_list))
+                
                 for i in range(len(path_list[0]) - 1):
                     j = 0
                     for path in path_list:
@@ -632,8 +725,7 @@ def main(window, width, height):
                         j += 1
                         draw_update(window, grid, row, col, width, height, path[i].get_floor())
                 
-                for i in path_num:
-                    print(i, '\n')
+                
                 '''
                 i = 0
                 for coord in draw_path:
