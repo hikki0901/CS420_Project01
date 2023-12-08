@@ -442,7 +442,28 @@ def export_screen(grid_export,path_list,row,col,width,height,floor,end,file_num)
             pygame.draw.rect(capture_surface, WHITE, fill_area_rect)
             draw_update(capture_surface,grid_agent,row,col,width,height,ifloor)
             pygame.image.save(capture_surface, "./output/level4/output"+str(file_num)+"_level4"+name_agent+"_floor"+str(ifloor+1)+".png")
-
+    
+    grid_agent = reset_grid(grid_export,row,col,floor)
+    path_list_agent = reset_node_color(path_list)
+    #draw full grid again
+    for k in range(len(path_list)):
+        name_agent = path_list_agent[k][0].text
+        for i in range(len(path_list_agent[k])-1):
+            if( i > limit_move):
+                break
+            pygame.draw.rect(capture_surface, WHITE, fill_area_rect)
+            draw_update(capture_surface, grid_agent, row, col, width, height, path_list_agent[k][i].get_floor())
+            path_list_agent[k][i].set_unvisible(k)
+            path_list_agent[k][i].increment_visit_count()
+            path_list_agent[k][i].set_heatmap_color()
+            if k == 0: path_list_agent[k][i+1].set_path_color()
+            else:
+                if (i) < limit_move - 1:
+                    path_list_agent[k][i+1].set_path_color_aux()
+            draw_update(capture_surface, grid_agent, row, col, width, height, path_list_agent[k][i].get_floor())
+        end.set_start_color()
+        draw_update(capture_surface,grid_agent,row,col,width,height,end.get_floor())
+        
 def draw_no_path_message(window,file_path):
     pygame.draw.rect(window,RED, Error_area,0,50)
     font1 = pygame.font.Font('freesansbold.ttf', 54)
@@ -820,6 +841,7 @@ def main(window, width, height):
                 agent_target.clear()
                 done =False
                 count = 0
+                export_screen(grid_export,path_temp,row,col,width,height,floor,end,file_num)
                 grid, start, end = make_grid_color(row, col, width, height, temp_grid,floor)
             
             if((click1)):
@@ -872,8 +894,7 @@ def main(window, width, height):
                         j = 0
                         for path in path_list:
                             pygame.draw.rect(window, WHITE, fill_area_rect)
-                            if(j==0):
-                                draw_update(window, grid, row, col, width, height, path[i].get_floor())
+                            draw_update(window, grid, row, col, width, height, path[i].get_floor())
                             pygame.time.delay(1)
                             path[i].set_unvisible(j)
                             path[i].increment_visit_count()
@@ -883,8 +904,7 @@ def main(window, width, height):
                                 if i < len(path_list[0]) - 2:
                                     path[i + 1].set_path_color_aux()
                             j += 1
-                            if(j==0):
-                                draw_update(window, grid, row, col, width, height, path[i].get_floor())
+                            draw_update(window, grid, row, col, width, height, path[i].get_floor())
                     
                     
                     '''
@@ -902,8 +922,7 @@ def main(window, width, height):
                     '''
                     done = True
                     end.set_start_color()
-                    draw_update(window,grid,row,col,width,height,end.get_floor())
-                    export_screen(grid_export,path_temp,row,col,width,height,floor,end,file_num) 
+                    draw_update(window,grid,row,col,width,height,end.get_floor()) 
                 else:
                     draw_no_path_message(window,"./output/level4/output"+str(file_num)+"_level4_NotFound.png")
           
