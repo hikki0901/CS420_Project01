@@ -425,6 +425,18 @@ def draw_grid_line(window, rows, cols, width, height):
     
     pygame.draw.line(window, GREY, (cols * gap2, 100), (cols * gap2, height+100))
 
+def update_floor_text(window,floor):
+    font_size =54
+    font_top = pygame.font.Font('freesansbold.ttf', font_size)
+    text_surface = font_top.render("Floor"+str(floor+1), True, PINK)
+    text_rect = text_surface.get_rect()
+    text_rect.centerx = WIDTH // 2 - 10
+    text_rect.y = 20 
+    window.fill(WHITE, text_rect)
+    # Blit the text surface onto the screen
+    window.blit(text_surface, text_rect)
+    pygame.display.flip()
+
 def draw_update(window, grid, rows, cols, width, height,cur_floor): 
     for i in grid[cur_floor]:
         for node in i:
@@ -435,7 +447,7 @@ def draw_update(window, grid, rows, cols, width, height,cur_floor):
             node.draw(window,cur_floor)
             
     draw_grid_line(window, rows, cols, width, height)
-    pygame.display.update()
+    update_floor_text(window,cur_floor)
 
 def draw_solution(come, current,row, col, width, height, start, grid,floor):
     path = {}
@@ -678,8 +690,8 @@ def main(window, width, height):
     while run:
         window.fill(WHITE)
         
-        astar_button = Button(10, 10, "Go", click1)
-        clear_button = Button(400, 10, "Clear", click4)
+        astar_button = Button(10, 20, "Go", click1)
+        clear_button = Button(450, 20, "Clear", click4)
         if(done == False):
             draw_update(window,grid,row,col,width,height,current_floor)
         else:

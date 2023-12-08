@@ -351,7 +351,7 @@ def update_floor_text(window,floor):
     font_top = pygame.font.Font('freesansbold.ttf', font_size)
     text_surface = font_top.render("Floor"+str(floor+1), True, PINK)
     text_rect = text_surface.get_rect()
-    text_rect.centerx = WIDTH // 2
+    text_rect.centerx = WIDTH // 2 - 10
     text_rect.y = 20 
     window.fill(WHITE, text_rect)
     # Blit the text surface onto the screen
