@@ -1,7 +1,10 @@
+import cProfile
+import copy
 from queue import PriorityQueue
 import pygame
 from os.path import exists
 import random
+
 
 pygame.init()
 
@@ -31,7 +34,7 @@ C6 = (255, 238, 181)
 C7 = (255, 206, 181)
 C8 = (255, 196, 181)
 
-window = pygame.display.set_mode((WIDTH, HEIGHT))
+WINDOW = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Move your step")
 font = pygame.font.Font('freesansbold.ttf', 18)
 tile_font = pygame.font.Font('freesansbold.ttf', 10)
@@ -50,10 +53,10 @@ class Button:
         text_button = font.render(self.text, True, BLACK)
         button = pygame.rect.Rect((self.x, self.y), (120, 50))
         if self.click:
-            pygame.draw.rect(window, GREEN, button, 0,5)
+            pygame.draw.rect(WINDOW, GREEN, button, 0,5)
         else:
-            pygame.draw.rect(window, IRISBLUE, button, 0,5)
-        window.blit(text_button,(self.x +20, self.y + 15))
+            pygame.draw.rect(WINDOW, IRISBLUE, button, 0,5)
+        WINDOW.blit(text_button,(self.x +20, self.y + 15))
     
     def is_click(self) -> bool:
         mouse = pygame.mouse.get_pos()
@@ -109,9 +112,10 @@ class Node:
     def draw(self, window,cur_floor):
         if(self.floor == cur_floor):
             pygame.draw.rect(window, self.color, (self.y * self.width, self.x * self.height + 100, self.width, self.height + 100))
-            text_surface = tile_font.render(self.text, True, BLACK)
-            text_rect = text_surface.get_rect(center=((self.y * self.width) + self.width // 2, (self.x * self.height + 100) + self.height // 2))
-            window.blit(text_surface, text_rect)
+            if(self.text != "-1"):
+                text_surface = tile_font.render(self.text, True, BLACK)
+                text_rect = text_surface.get_rect(center=((self.y * self.width) + self.width // 2, (self.x * self.height + 100) + self.height // 2))
+                window.blit(text_surface, text_rect)
 
     def set_barrier_color(self):
         self.color = BLACK
@@ -133,6 +137,9 @@ class Node:
 
     def set_path_color_aux(self):
         self.color = GREEN
+    
+    def set_node_null(self):
+        self.color =WHITE
     
     def set_unvisible(self, i):
         if i == 0: self.color = C0
@@ -351,6 +358,91 @@ def read_grid_from_file(file):
                 
     return row, column, max_floor, grid
 
+#reset node color
+def reset_node_color(path_list_agent):
+    path_list = copy.copy(path_list_agent)
+    for i in range(len(path_list)):
+        for node in path_list[i]:
+            if(node.text.startswith("A")):
+                if (node.text.startswith("A1")):
+                        node.set_start_color()
+                else: node.set_path_color_aux()
+
+            if(node.text.startswith("T")):
+                node.set_end_color()
+            if(node.text.startswith("K")):
+                node.set_key()
+            if(node.text.startswith("UP")):
+                node.set_UP()
+            if(node.text != "DO" and node.text.startswith("D")):
+                node.set_door()
+            if(node.text.startswith("DO")):
+                node.set_DO()
+            if(node.text =="-1"):
+                node.set_barrier_color()
+            if(node.text ==""):
+                node.set_node_null()
+    return path_list
+
+def reset_grid(grid,row,col,floor):
+    for k in range(floor):
+        for i in range(row):
+            for j in range(col):
+                if(grid[k][i][j].text.startswith("A")):
+                    if (grid[k][i][j].text.startswith("A1")):
+                            grid[k][i][j].set_start_color()
+                    else: grid[k][i][j].set_path_color_aux()
+
+                if(grid[k][i][j].text.startswith("T")):
+                        grid[k][i][j].set_end_color()
+                if(grid[k][i][j].text.startswith("K")):
+                        grid[k][i][j].set_key()
+                if(grid[k][i][j].text.startswith("UP")):
+                        grid[k][i][j].set_UP()
+                if(grid[k][i][j].text != "DO" and grid[k][i][j].text.startswith("D")):
+                        grid[k][i][j].set_door()
+                if(grid[k][i][j].text.startswith("DO")):
+                        grid[k][i][j].set_DO()
+                if(grid[k][i][j].text =="-1"):
+                    grid[k][i][j].set_barrier_color()
+                if(grid[k][i][j].text==""):
+                    grid[k][i][j].set_node_null()
+    return grid
+
+#export screen image 
+def export_screen(grid_export,path_list,row,col,width,height,floor,end,file_num):
+    
+    limit_move = len(path_list[0]) - 1
+    
+    for k in range(len(path_list)):
+        capture_surface = pygame.Surface((WIDTH, HEIGHT))
+        capture_surface.fill(WHITE)
+        grid_agent = reset_grid(grid_export,row,col,floor)
+        path_list_agent = reset_node_color(path_list)
+        name_agent = path_list_agent[k][0].text
+        for i in range(len(path_list_agent[k])-1):
+            if( i > limit_move):
+                break
+            pygame.draw.rect(capture_surface, WHITE, fill_area_rect)
+            draw_update(capture_surface, grid_agent, row, col, width, height, path_list_agent[k][i].get_floor())
+            path_list_agent[k][i].set_unvisible(k)
+            path_list_agent[k][i].increment_visit_count()
+            path_list_agent[k][i].set_heatmap_color()
+            if k == 0: path_list_agent[k][i+1].set_path_color()
+            else:
+                if (i) < limit_move - 1:
+                    path_list_agent[k][i+1].set_path_color_aux()
+            draw_update(capture_surface, grid_agent, row, col, width, height, path_list_agent[k][i].get_floor())
+        end.set_start_color()
+        draw_update(capture_surface,grid_agent,row,col,width,height,end.get_floor())
+        
+        for ifloor in range(floor):
+            capture_surface = pygame.Surface((WIDTH, HEIGHT))
+            capture_surface.fill(WHITE)
+            pygame.draw.rect(capture_surface, WHITE, fill_area_rect)
+            draw_update(capture_surface,grid_agent,row,col,width,height,ifloor)
+            pygame.image.save(capture_surface, "./output/level4/output"+str(file_num)+"_level4"+name_agent+"_floor"+str(ifloor+1)+".png")
+
 def draw_no_path_message(window,file_path):
     pygame.draw.rect(window,RED, Error_area,0,50)
     font1 = pygame.font.Font('freesansbold.ttf', 54)
@@ -393,7 +485,11 @@ def make_grid_color(row, col, width, height, grid,floor):
                         end = node
 
                 if(grid[k][i][j] == "-1"):
+                    node.text = str(grid[k][i][j])
                     node.set_barrier_color()
+                
+                if(grid[k][i][j] == "0"):
+                    node.set_node_null()
 
                 if(grid[k][i][j].startswith("K")):
                     node.set_key()
@@ -447,7 +543,7 @@ def draw_update(window, grid, rows, cols, width, height,cur_floor):
     draw_grid_line(window, rows, cols, width, height)
     update_floor_text(window,cur_floor)
 
-def draw_solution(come, current,row, col, width, height, start, grid,floor):
+def draw_solution(window,come, current,row, col, width, height, start, grid,floor):
     path = {}
     while current in come:   
         path[come[current]] = current
@@ -470,7 +566,7 @@ def heuristic(start, end, start_floor, end_floor):
         penalty = 1
     return abs(x1 - x2) + abs(y1 - y2) + abs(start_floor-end_floor) + penalty * 100
 
-def astar_algorithm(row, col, width, height, grid, start, end, floor):
+def astar_algorithm(window,row, col, width, height, grid, start, end, floor):
     count = 0
     frontier = PriorityQueue()
     frontier.put((0, count, start))
@@ -487,7 +583,7 @@ def astar_algorithm(row, col, width, height, grid, start, end, floor):
         explored.remove(current_node)
 
         if current_node == end:
-            #draw_solution(come,end,draw,row, col, width, height,start,grid,start.get_floor())
+            #draw_solution(window,come,end,draw,row, col, width, height,start,grid,start.get_floor())
             path = {}
             while end in come:   
                 path[come[end]] = end
@@ -511,7 +607,7 @@ def astar_algorithm(row, col, width, height, grid, start, end, floor):
 
     return False
 
-def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, collected_key,floor,final_path):
+def astar_algorithm_with_checkpoints(window,row, col, width, height, grid, checklist, collected_key,floor,final_path):
     collected_key.clear()
     for i in range(len(checklist) - 1):
         start = checklist[i]
@@ -542,7 +638,7 @@ def astar_algorithm_with_checkpoints(row, col, width, height, grid, checklist, c
             current_node.neighbors(grid, collected_key, True)
                 
             if current_node == end:
-                # draw_solution(come, end,row, col, width, height, start,grid,start.get_floor())
+                # draw_solution(window,come, end,row, col, width, height, start,grid,start.get_floor())
                 path = {}
                 tmp = []
                 while end in come:   
@@ -576,12 +672,12 @@ def set_recursive_limit (grid):
                     count += 1
     return count * 2       
 
-def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,floor, count, limit):
+def recursive (window,row, col, width, height, grid, start, end, goal_list, all_keys,floor, count, limit):
     if count == limit:
         print ("No path, limit reached")
         return False
     
-    path = astar_algorithm(row, col, width, height, grid, start, end,floor)
+    path = astar_algorithm(window,row, col, width, height, grid, start, end,floor)
     if not path:
         print ("No path")
         return
@@ -598,7 +694,7 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
                         if node in goal_list:
                             goal_list.remove(node)
                         goal_list.append(node)
-                        result = recursive (row, col, width, height, grid, start, node, goal_list, all_keys, floor, count +1, limit)
+                        result = recursive (window,row, col, width, height, grid, start, node, goal_list, all_keys, floor, count +1, limit)
 
                         if not result:
                             return False
@@ -678,6 +774,7 @@ def main(window, width, height):
     agent_target = []
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
+    grid_export = grid
     goal_list = []
     all_keys = []
     click1 = False
@@ -688,6 +785,7 @@ def main(window, width, height):
     run = True
     done = False
     count = 0
+    path_temp = []
     while run:
         window.fill(WHITE)
         
@@ -742,12 +840,12 @@ def main(window, width, height):
                 for agent in agent_list:
                     if agent.text.startswith("A1"):
                         target = define_target(agent,grid)
-                        check = recursive(row, col, width, height, grid, agent, target, goal_list, all_keys, floor, count, recursive_limit)
+                        check = recursive(window,row, col, width, height, grid, agent, target, goal_list, all_keys, floor, count, recursive_limit)
                         if check:
                             goal_list.reverse() 
                             goal_list.insert(0, agent)
                             goal_list.append(target)
-                            astar_algorithm_with_checkpoints( row, col, width, height, grid, goal_list, collected_key,floor, path)
+                            astar_algorithm_with_checkpoints(window,row, col, width, height, grid, goal_list, collected_key,floor, path)
                             path_list.append(path)
                             break
                 
@@ -765,17 +863,17 @@ def main(window, width, height):
                         for path in path_list:
                             draw_path.append(path[i])
                             path_num.append(j)
-                            j += 1
-
+                            j += 1 
                     #for i in path_num:
                     #    print(i, '\n')
                     print(len(path_list))
-                    
+                    path_temp = path_list
                     for i in range(len(path_list[0]) - 1):
                         j = 0
                         for path in path_list:
                             pygame.draw.rect(window, WHITE, fill_area_rect)
-                            draw_update(window, grid, row, col, width, height, path[i].get_floor())
+                            if(j==0):
+                                draw_update(window, grid, row, col, width, height, path[i].get_floor())
                             pygame.time.delay(1)
                             path[i].set_unvisible(j)
                             path[i].increment_visit_count()
@@ -785,7 +883,8 @@ def main(window, width, height):
                                 if i < len(path_list[0]) - 2:
                                     path[i + 1].set_path_color_aux()
                             j += 1
-                            draw_update(window, grid, row, col, width, height, path[i].get_floor())
+                            if(j==0):
+                                draw_update(window, grid, row, col, width, height, path[i].get_floor())
                     
                     
                     '''
@@ -804,6 +903,7 @@ def main(window, width, height):
                     done = True
                     end.set_start_color()
                     draw_update(window,grid,row,col,width,height,end.get_floor())
+                    export_screen(grid_export,path_temp,row,col,width,height,floor,end,file_num) 
                 else:
                     draw_no_path_message(window,"./output/level4/output"+str(file_num)+"_level4_NotFound.png")
           
@@ -812,9 +912,10 @@ def main(window, width, height):
              
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
-        
+                run = False  
     pygame.quit()
     
 if __name__ == "__main__":
-    main(window, WIDTH,HEIGHT-100)
+    main(WINDOW, WIDTH,HEIGHT-100)
+    
+
