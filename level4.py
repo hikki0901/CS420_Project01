@@ -737,8 +737,53 @@ def define_target(agent, grid):
                             target = (grid[k][i][j])
                             return target
     
+def get_all_path(agent_list, path_list, main_path, grid, collected_key, lim):
+    fake_key = []
+    agent_cur_pos = []
+    save_path = main_path
+    
+    for agent in agent_list:
+        tmp_path = []
+        tmp_path.append(agent)
+        agent_cur_pos.append(agent)
+        path_list.append(tmp_path)
 
+    end = main_path[-1]
 
+    k = 0
+    i = 1
+    while main_path[i - 1] != end:
+        j = 0
+        main_path[i].neighbors(grid, collected_key, False)
+        for path in path_list:
+            if j == 0:
+                if main_path[i] in agent_cur_pos:
+                    path.append(path[i - 1])
+                    main_path.insert(i, main_path[i])
+                    k += 1
+                else:
+                    path.append(main_path[i])
+                    agent_cur_pos[j] = main_path[i]
+            else:
+                agent_cur_pos[j].neighbors_check_agent(grid, fake_key, True, agent_cur_pos)
+                tmp_neighbor = random.choice(agent_cur_pos[j].neighbor)
+                if tmp_neighbor in main_path[i].neighbor or tmp_neighbor == main_path[i] or tmp_neighbor is None:
+                    path.append(path[i - 1])
+                else:
+                    path.append(tmp_neighbor)
+                    agent_cur_pos[j] = tmp_neighbor
+            j += 1
+        i += 1
+        if k >= 1000: 
+            if lim < 100:
+                path_list.clear
+                get_all_path(agent_list, path_list, save_path, grid, collected_key)
+            else:
+                break
+
+            
+
+'''
 def get_all_path (agent_list, path_list, grid, collected_key):
     fake_key = []
     main_path = list(path_list[0])
@@ -751,22 +796,6 @@ def get_all_path (agent_list, path_list, grid, collected_key):
             agent_current_pos.append(agent)
             path_list.append(tmp_path)
 
-    '''
-    for agent in agent_list:
-        if not agent.text.startswith("A1"):
-            tmp_path = []
-            tmp_path.append(agent)
-            for i in range(1, len(main_path)):
-                main_path[i].neighbors(grid, collected_key, False)
-                tmp_path[i-1].neighbors(grid, collected_key, False)
-                tmp_neighbor = random.choice(tmp_path[i-1].neighbor)
-                if tmp_neighbor in main_path[i].neighbor or tmp_neighbor == main_path[i]:
-                    tmp_path.append(tmp_path[i-1])
-                else:
-                    tmp_path.append(tmp_neighbor)
-
-            path_list.append(tmp_path)
-    '''
     for i in range(1, len(path_list[0]) - 1):
         main_path[i].neighbors(grid, collected_key, False)
         j = 0
@@ -780,7 +809,7 @@ def get_all_path (agent_list, path_list, grid, collected_key):
                     path.append(tmp_neighbor)
                     agent_current_pos[j - 1] = tmp_neighbor
             j += 1
-    
+'''   
             
 
 def main(window, width, height):
@@ -867,13 +896,13 @@ def main(window, width, height):
                             goal_list.insert(0, agent)
                             goal_list.append(target)
                             astar_algorithm_with_checkpoints(window,row, col, width, height, grid, goal_list, collected_key,floor, path)
-                            path_list.append(path)
+                            #path_list.append(path)
                             break
                 
                 
                 
                 if path:            
-                    get_all_path(agent_list, path_list,grid,collected_key)
+                    get_all_path(agent_list, path_list, path, grid,collected_key, 0)
                     # for path in path_list:
                     #     print (len(path))
                     
@@ -894,7 +923,7 @@ def main(window, width, height):
                         for path in path_list:
                             pygame.draw.rect(window, WHITE, fill_area_rect)
                             draw_update(window, grid, row, col, width, height, path[i].get_floor())
-                            pygame.time.delay(1)
+                            pygame.time.delay(200)
                             path[i].set_unvisible(j)
                             path[i].increment_visit_count()
                             path[i].set_heatmap_color()
