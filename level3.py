@@ -6,7 +6,7 @@ from os.path import exists
 pygame.init()
 
 WIDTH = 600
-HEIGHT= 600
+HEIGHT= 700
 
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -202,7 +202,7 @@ class Node:
                     
                     if check_door == True:
                         if grid[cur_floor][new_x][new_y].is_door:
-                            key = "K" + str(grid[cur_floor][new_x][new_y].text[1])
+                            key = "K" + str(grid[cur_floor][new_x][new_y].text[1:])
                             if key not in collected_key:
                                 check = False
 
@@ -518,7 +518,7 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
                 if step in goal_list:
                     goal_list.remove(step)
                 goal_list.append(step)
-                key = "K" + str(step.text)[1]
+                key = "K" + str(step.text)[1:]
                 for node in all_keys:
                     if node.text == key:
                         if node in goal_list:
@@ -534,7 +534,7 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
 
 
 def main(window, width, height):
-    file = './input/level3/input1-level3.txt'
+    file = './input/level3/input4-level3.txt'
     file_num = file[20]
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
