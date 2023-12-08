@@ -19,6 +19,7 @@ IRISBLUE = (0, 181, 204)
 PINK = (255, 105, 180)
 LIGHTGREEN = (208,242,136)
 LIGHTPUR = (255,245,194)
+ERROR_AREA_COLOR = (120, 124, 198)
 
 C0 = (255, 181, 181)
 C1 = (255, 181, 216)
@@ -35,6 +36,8 @@ pygame.display.set_caption("Move your step")
 font = pygame.font.Font('freesansbold.ttf', 18)
 tile_font = pygame.font.Font('freesansbold.ttf', 10)
 fill_area_rect = pygame.Rect(0, 100, WIDTH, HEIGHT-100)
+Error_area = pygame.Rect(WIDTH // 4-50, HEIGHT//2 -35, 400, 120)
+
 class Button:
     def __init__(self, x, y, text, click):
         self.x = x
@@ -350,6 +353,23 @@ def read_grid_from_file():
                 
     return row, column, max_floor, grid
 
+def draw_no_path_message(window,file_path):
+    pygame.draw.rect(window,RED, Error_area,0,50)
+    font1 = pygame.font.Font('freesansbold.ttf', 54)
+    text = font1.render('Level 4', True, YELLOW)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    font2 = pygame.font.Font('freesansbold.ttf', 42)
+    text_level = font2.render('No Path Found', True, YELLOW)
+    text_level_rect = text_level.get_rect(center=(WIDTH // 2, HEIGHT // 2+54))
+    window.blit(text, text_rect)
+    window.blit(text_level, text_level_rect)
+    
+    pygame.display.update()
+    pygame.time.delay(2000)
+    
+    # Save the screen with the pop-up message
+    pygame.image.save(window, file_path)
+
 def make_grid_color(row, col, width, height, grid,floor):
     grid_color = []
     start = None
@@ -640,6 +660,8 @@ def get_all_path (agent_list, path_list, grid, collected_key):
             
 
 def main(window, width, height):
+    file = './input/level3/input1-level4.txt'
+    file_num = file[20]
     agent_target = []
     row, col, floor, temp_grid = read_grid_from_file()
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
@@ -769,6 +791,8 @@ def main(window, width, height):
                     done = True
                     end.set_start_color()
                     draw_update(window,grid,row,col,width,height,end.get_floor())
+                else:
+                    draw_no_path_message(window,"./output/level4/output"+str(file_num)+"_level4_NotFound.png")
           
         if(not pygame.mouse.get_pressed()[0]) and not one_press:
             one_press = True

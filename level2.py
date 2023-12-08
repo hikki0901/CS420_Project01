@@ -191,7 +191,7 @@ def draw_no_path_message(window,file_path):
     text = font1.render('Level 2', True, YELLOW)
     text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
     font2 = pygame.font.Font('freesansbold.ttf', 42)
-    text_level = font2.render('Not Path Found', True, YELLOW)
+    text_level = font2.render('No Path Found', True, YELLOW)
     text_level_rect = text_level.get_rect(center=(WIDTH // 2, HEIGHT // 2+54))
     window.blit(text, text_rect)
     window.blit(text_level, text_level_rect)
