@@ -315,11 +315,9 @@ class Node:
         return False
 
 
-def read_grid_from_file():
+def read_grid_from_file(file):
     grid = []
     max_floor = 0
-    
-    file = './input/level4/input2-level4.txt'
 
     if not exists(file):
         print("File does not exist")
@@ -675,10 +673,10 @@ def get_all_path (agent_list, path_list, grid, collected_key):
             
 
 def main(window, width, height):
-    file = './input/level3/input1-level4.txt'
+    file = './input/level4/input1-level4.txt'
     file_num = file[20]
     agent_target = []
-    row, col, floor, temp_grid = read_grid_from_file()
+    row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
     goal_list = []
     all_keys = []
