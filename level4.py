@@ -1,4 +1,6 @@
 import cProfile
+from timeout_decorator import timeout
+import time
 import copy
 from queue import PriorityQueue
 import pygame
@@ -475,6 +477,36 @@ def draw_no_path_message(window,file_path):
     # Save the screen with the pop-up message
     pygame.image.save(window, file_path)
 
+def draw_error(window):
+    pygame.draw.rect(window,RED, Error_area,0,50)
+    font1 = pygame.font.Font('freesansbold.ttf', 54)
+    text = font1.render('Level 4', True, YELLOW)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    font2 = pygame.font.Font('freesansbold.ttf', 42)
+    text_level = font2.render('Loading...', True, YELLOW)
+    text_level_rect = text_level.get_rect(center=(WIDTH // 2, HEIGHT // 2+54))
+    window.blit(text, text_rect)
+    window.blit(text_level, text_level_rect)
+    
+    pygame.display.update()
+    pygame.time.delay(2000)
+
+def draw_timeup(window, file_path):
+    pygame.draw.rect(window,RED, Error_area,0,50)
+    font1 = pygame.font.Font('freesansbold.ttf', 54)
+    text = font1.render('Level 4', True, YELLOW)
+    text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+    font2 = pygame.font.Font('freesansbold.ttf', 42)
+    text_level = font2.render('Time limit reached', True, YELLOW)
+    text_level_rect = text_level.get_rect(center=(WIDTH // 2, HEIGHT // 2+54))
+    window.blit(text, text_rect)
+    window.blit(text_level, text_level_rect)
+    
+    pygame.display.update()
+    pygame.time.delay(2000)
+
+    pygame.image.save(window, file_path)
+
 def make_grid_color(row, col, width, height, grid,floor):
     grid_color = []
     start = None
@@ -901,7 +933,24 @@ def main(window, width, height):
                 if path:            
                     # for path in path_list:
                     #     print (len(path))
-                    get_all_path(agent_list, path_list, path, grid,collected_key)
+                    max_execute_time = 5
+                    max_retries = 5
+                    retries_count = 0
+
+                    while retries_count < max_retries:
+                        start_time = time.time()
+                        try:
+                            timeout(max_execute_time)(get_all_path(agent_list, path_list, path, grid,collected_key))()
+                        except Exception as e:
+                            draw_error(window)
+                        elapsed_time = time.time() - start_time
+                        if elapsed_time > max_execute_time:
+                            retry_count += 1
+                        else:
+                            break
+                    else:
+                        draw_timeup(window, "./output/level4/output"+str(file_num)+"_level4_LimitReached.png")
+
                     draw_path = []
                     path_num = []
                     for i in range(len(path_list[0]) - 1):
