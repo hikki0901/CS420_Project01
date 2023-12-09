@@ -754,12 +754,6 @@ def get_all_path(agent_list, path_list, main_path, grid, collected_key):
     end = main_path[-1]
 
     i = 1
-    k = 0
-    check = False
-    h = []
-    for agent in agent_list:
-        h.append(0)
-
     while main_path[i - 1] != end:
         j = 0
         main_path[i].neighbors(grid, collected_key, False)
@@ -768,15 +762,12 @@ def get_all_path(agent_list, path_list, main_path, grid, collected_key):
                 if main_path[i] in agent_cur_pos:
                     path.append(path[i - 1])
                     main_path.insert(i, main_path[i - 1])
-                    k += 1
                 else:
                     path.append(main_path[i])
                     agent_cur_pos[j] = main_path[i]
-                    k = 0
             else:
                 agent_cur_pos[j].neighbors_check_agent(grid, fake_key, True, agent_cur_pos)
                 if len(agent_cur_pos[j].neighbor) != 0:
-                    h[j] = 0
                     tmp_neighbor = random.choice(agent_cur_pos[j].neighbor)
                     if tmp_neighbor in main_path[i].neighbor or tmp_neighbor == main_path[i] or tmp_neighbor is None:
                         path.append(path[i - 1])
@@ -785,19 +776,8 @@ def get_all_path(agent_list, path_list, main_path, grid, collected_key):
                         agent_cur_pos[j] = tmp_neighbor
                 else: 
                     path.append(path[i - 1])
-                    h[j] += 1
             j += 1
         i += 1
-        if k > 10 or h[j - 1] > 10:
-            check = True
-            break
-    
-    if k > 10 or check == True:
-        path_list.clear
-        main_path.clear
-        for pos in save_path:
-            main_path.append(pos)
-        get_all_path(agent_list, path_list, main_path, grid, collected_key)
             
 
 '''
