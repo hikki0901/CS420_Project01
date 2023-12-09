@@ -737,11 +737,14 @@ def define_target(agent, grid):
                             target = (grid[k][i][j])
                             return target
     
-def get_all_path(agent_list, path_list, main_path, grid, collected_key, lim):
+def get_all_path(agent_list, path_list, main_path, grid, collected_key):
     fake_key = []
     agent_cur_pos = []
-    save_path = main_path
-    
+
+    save_path = []
+    for pos in main_path:
+        save_path.append(pos)
+
     for agent in agent_list:
         tmp_path = []
         tmp_path.append(agent)
@@ -750,8 +753,13 @@ def get_all_path(agent_list, path_list, main_path, grid, collected_key, lim):
 
     end = main_path[-1]
 
-    k = 0
     i = 1
+    k = 0
+    check = False
+    h = []
+    for agent in agent_list:
+        h.append(0)
+
     while main_path[i - 1] != end:
         j = 0
         main_path[i].neighbors(grid, collected_key, False)
@@ -759,28 +767,37 @@ def get_all_path(agent_list, path_list, main_path, grid, collected_key, lim):
             if j == 0:
                 if main_path[i] in agent_cur_pos:
                     path.append(path[i - 1])
-                    main_path.insert(i, main_path[i])
+                    main_path.insert(i, main_path[i - 1])
                     k += 1
                 else:
                     path.append(main_path[i])
                     agent_cur_pos[j] = main_path[i]
+                    k = 0
             else:
                 agent_cur_pos[j].neighbors_check_agent(grid, fake_key, True, agent_cur_pos)
-                tmp_neighbor = random.choice(agent_cur_pos[j].neighbor)
-                if tmp_neighbor in main_path[i].neighbor or tmp_neighbor == main_path[i] or tmp_neighbor is None:
+                if len(agent_cur_pos[j].neighbor) != 0:
+                    h[j] = 0
+                    tmp_neighbor = random.choice(agent_cur_pos[j].neighbor)
+                    if tmp_neighbor in main_path[i].neighbor or tmp_neighbor == main_path[i] or tmp_neighbor is None:
+                        path.append(path[i - 1])
+                    else:
+                        path.append(tmp_neighbor)
+                        agent_cur_pos[j] = tmp_neighbor
+                else: 
                     path.append(path[i - 1])
-                else:
-                    path.append(tmp_neighbor)
-                    agent_cur_pos[j] = tmp_neighbor
+                    h[j] += 1
             j += 1
         i += 1
-        if k >= 1000: 
-            if lim < 100:
-                path_list.clear
-                get_all_path(agent_list, path_list, save_path, grid, collected_key)
-            else:
-                break
-
+        if k > 10 or h[j - 1] > 10:
+            check = True
+            break
+    
+    if k > 10 or check == True:
+        path_list.clear
+        main_path.clear
+        for pos in save_path:
+            main_path.append(pos)
+        get_all_path(agent_list, path_list, main_path, grid, collected_key)
             
 
 '''
@@ -902,10 +919,9 @@ def main(window, width, height):
                 
                 
                 if path:            
-                    get_all_path(agent_list, path_list, path, grid,collected_key, 0)
                     # for path in path_list:
                     #     print (len(path))
-                    
+                    get_all_path(agent_list, path_list, path, grid,collected_key)
                     draw_path = []
                     path_num = []
                     for i in range(len(path_list[0]) - 1):
@@ -923,7 +939,7 @@ def main(window, width, height):
                         for path in path_list:
                             pygame.draw.rect(window, WHITE, fill_area_rect)
                             draw_update(window, grid, row, col, width, height, path[i].get_floor())
-                            pygame.time.delay(200)
+                            pygame.time.delay(1)
                             path[i].set_unvisible(j)
                             path[i].increment_visit_count()
                             path[i].set_heatmap_color()
@@ -933,8 +949,8 @@ def main(window, width, height):
                                     path[i + 1].set_path_color_aux()
                             j += 1
                             draw_update(window, grid, row, col, width, height, path[i].get_floor())
-                    
-                    
+                        
+                        
                     '''
                     i = 0
                     for coord in draw_path:
