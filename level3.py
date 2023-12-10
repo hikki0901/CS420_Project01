@@ -379,7 +379,7 @@ def draw_solution(come, current,row, col, width, height, start, grid,floor):
     while start in path:
         pygame.draw.rect(window, WHITE, fill_area_rect)
         draw_update(window,grid,row, col, width, height,start.get_floor())
-        pygame.time.delay(100)
+        pygame.time.delay(1)
         start.set_unvisible()
         start.increment_visit_count()
         start.set_heatmap_color()
@@ -534,7 +534,7 @@ def recursive (row, col, width, height, grid, start, end, goal_list, all_keys,fl
 
 
 def main(window, width, height):
-    file = './input/level3/input4-level3.txt'
+    file = './input/level3/input5-level3.txt'
     file_num = file[20]
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid,floor)
