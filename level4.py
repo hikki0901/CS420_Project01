@@ -812,35 +812,6 @@ def get_all_path(agent_list, path_list, main_path, grid, collected_key):
         i += 1
             
 
-'''
-def get_all_path (agent_list, path_list, grid, collected_key):
-    fake_key = []
-    main_path = list(path_list[0])
-
-    agent_current_pos = []
-    for agent in agent_list:
-        if not agent.text.startswith("A1"):
-            tmp_path = []
-            tmp_path.append(agent)
-            agent_current_pos.append(agent)
-            path_list.append(tmp_path)
-
-    for i in range(1, len(path_list[0]) - 1):
-        main_path[i].neighbors(grid, collected_key, False)
-        j = 0
-        for path in path_list:
-            if j != 0:
-                agent_current_pos[j - 1].neighbors_check_agent(grid, fake_key, True, agent_current_pos)
-                tmp_neighbor = random.choice(agent_current_pos[j - 1].neighbor)
-                if tmp_neighbor in main_path[i].neighbor or tmp_neighbor == main_path[i] or tmp_neighbor is None:
-                    path.append(path[i - 1])
-                else:
-                    path.append(tmp_neighbor)
-                    agent_current_pos[j - 1] = tmp_neighbor
-            j += 1
-'''   
-            
-
 def main(window, width, height):
     file = './input/level4/input1-level4.txt'
     file_num = file[20]
@@ -979,20 +950,6 @@ def main(window, width, height):
                             j += 1
                             draw_update(window, grid, row, col, width, height, path[i].get_floor())
                         
-                        
-                    '''
-                    i = 0
-                    for coord in draw_path:
-                        pygame.draw.rect(window, WHITE, fill_area_rect)
-                        draw_update(window, grid, row, col, width, height, coord.get_floor())
-                        pygame.time.delay(1000)
-                        coord.set_unvisible(path_num[i])
-                        coord.increment_visit_count()
-                        coord.set_heatmap_color()
-                        i += 1
-                        draw_path[i].set_path_color()
-                        draw_update(window, grid, row, col, width, height, coord.get_floor())
-                    '''
                     done = True
                     end.set_start_color()
                     draw_update(window,grid,row,col,width,height,end.get_floor()) 
