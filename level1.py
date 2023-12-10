@@ -385,7 +385,7 @@ def draw_no_path_message(window,file_path):
     
 
 def main(window, width, height):
-    file = './input/level1/input1-level1.txt'
+    file = './input/level1/input5-level1.txt'
     file_num = file[20]
     row, col,floor, temp_grid = read_grid_from_file(file)
     grid,start,end = make_grid_color(row,col,width,height,temp_grid)
