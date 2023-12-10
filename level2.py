@@ -429,7 +429,7 @@ def recursive (draw, grid, start, end, goal_list, all_keys, count, limit):
 
                     
 def main(window, width, height):
-    file = './input/level2/input1-level2.txt'
+    file = './input/level2/input5-level2.txt'
     file_num = file[20]
     row, col, floor, temp_grid = read_grid_from_file(file)
     grid, start, end = make_grid_color(row,col,width,height,temp_grid)
