@@ -762,12 +762,12 @@ def define_agent(grid):
 
 def define_target(agent, grid):
     for k in range(len(grid)):
-            for i in range(len(grid[0])):
-                for j in range(len(grid[0][0])):
-                    if grid[k][i][j].text.startswith("T"):
-                        if grid[k][i][j].text[1] == agent.text[1]:
-                            target = (grid[k][i][j])
-                            return target
+        for i in range(len(grid[0])):
+            for j in range(len(grid[0][0])):
+                if grid[k][i][j].text.startswith("T"):
+                    if grid[k][i][j].text[1] == agent.text[1]:
+                        target = (grid[k][i][j])
+                        return target
     
 def get_all_path(agent_list, path_list, main_path, grid, collected_key):
     fake_key = []
